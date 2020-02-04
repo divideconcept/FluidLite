@@ -1,6 +1,9 @@
 FLUIDLITE 1.0 (c) 2016 Robin Lobel
 =========
 
+[![License: LGPL-2.1](https://img.shields.io/badge/License-LGPL--2.1-brightgreen.svg)](https://opensource.org/licenses/LGPL-2.1)
+[![Travis-CI Status](https://travis-ci.com/katyo/fluidlite.svg?branch=master)](https://travis-ci.com/katyo/fluidlite)
+
 FluidLite is a very light version of FluidSynth
 designed to be hardware, platform and external dependency independant.
 It only uses standard C libraries.
