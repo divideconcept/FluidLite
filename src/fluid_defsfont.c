@@ -588,16 +588,18 @@ fluid_sample_t* fluid_defsfont_get_sample(fluid_defsfont_t* sfont, char *s)
         vorbisData.datasize = (sample->end + 1 - sample->start);
 
         if (ov_open_callbacks(&vorbisData, &vf, 0, 0, ovCallbacks) == 0) {
-          char buffer[4096];
+#define BUFFER_SIZE 4096
           int bytes_read = 0;
           int section = 0;
           for (;;) {
-            bytes_read = ov_read(&vf, buffer, sizeof(buffer), 0, sizeof(short), 1, &section);
-            sampledata = realloc(sampledata, sampledata_size + bytes_read);
+            // allocate additional memory for samples
+            sampledata = realloc(sampledata, sampledata_size + BUFFER_SIZE);
+            bytes_read = ov_read(&vf, (char*)sampledata + sampledata_size, BUFFER_SIZE, 0, sizeof(short), 1, &section);
             if (bytes_read > 0) {
-              memcpy((char*)sampledata + sampledata_size, buffer, bytes_read);
               sampledata_size += bytes_read;
             } else {
+              // shrink sampledata to actual size
+              sampledata = realloc(sampledata, sampledata_size);
               break;
             }
           }
