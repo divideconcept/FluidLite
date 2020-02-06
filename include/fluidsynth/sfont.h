@@ -75,9 +75,6 @@ struct _fluid_sfloader_t {
   /** Private data */
   void* data;
 
-  /** Callback structure specifying file operations used during soundfont loading to allow custom loading, such as from memory */
-  const fluid_fileapi_t* fileapi;
-
   /** The free must free the memory allocated for the loader in
    * addition to any private data. It should return 0 if no error
    * occured, non-zero otherwise.*/
@@ -85,6 +82,9 @@ struct _fluid_sfloader_t {
 
   /** Load a file. Returns NULL if an error occured. */
   fluid_sfont_t* (*load)(fluid_sfloader_t* loader, const char* filename);
+
+  /** Callback structure specifying file operations used during soundfont loading to allow custom loading, such as from memory */
+  const fluid_fileapi_t* fileapi;
 };
 
 /**
