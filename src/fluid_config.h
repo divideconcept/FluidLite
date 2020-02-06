@@ -11,9 +11,14 @@
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
+#define SF3_DISABLED 0
+#define SF3_XIPH_VORBIS 1
+#define SF3_STB_VORBIS 2
+
 #ifndef SF3_SUPPORT
-#define SF3_SUPPORT 1
+#define SF3_SUPPORT SF3_DISABLED
 #endif
+
 #ifndef WITH_FLOAT
 #define WITH_FLOAT 1
 #endif

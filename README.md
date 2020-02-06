@@ -1,8 +1,9 @@
-FLUIDLITE 1.0 (c) 2016 Robin Lobel
-=========
+# FluidLite
 
 [![License: LGPL-2.1](https://img.shields.io/badge/License-LGPL--2.1-brightgreen.svg)](https://opensource.org/licenses/LGPL-2.1)
 [![Travis-CI Status](https://travis-ci.com/katyo/fluidlite.svg?branch=master)](https://travis-ci.com/katyo/fluidlite)
+
+FluidLite (c) 2016 Robin Lobel
 
 FluidLite is a very light version of FluidSynth
 designed to be hardware, platform and external dependency independant.
@@ -17,8 +18,13 @@ FluidLite keeps very minimal functionnalities (settings and synth),
 therefore MIDI file reading, realtime MIDI events and audio output must be
 implemented externally.
 
-Usage:
-------
+## Config
+
+By default SF3 support is disabled. To enable it use `-DENABLE_SF3=YES` with cmake.
+
+Alternatively it can be configured to use [stb_vorbis](https://github.com/nothings/stb) to decompress SF3 instead of Xiph's [libogg](https://github.com/xiph/ogg)/[libvorbis](https://github.com/xiph/vorbis). You can pass `-DSTB_VORBIS=YES` to cmake to do it.
+
+## Usage
 
 ```c
 #include <stdlib.h>

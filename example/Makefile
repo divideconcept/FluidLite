@@ -8,10 +8,12 @@ endif
 
 examples: example/sf_/Boomwhacker.sf2
 
-ifndef without_sf3
+ifdef sf3
 examples: example/sf_/Boomwhacker.sf3
-else
-cmake_args += -DDISABLE_SF3=YES
+cmake_args += -DENABLE_SF3=YES
+ifeq ($(sf3),stb)
+cmake_args += -DSTB_VORBIS=YES
+endif
 endif
 
 example/%: out/example

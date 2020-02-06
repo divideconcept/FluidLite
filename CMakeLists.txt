@@ -49,7 +49,14 @@ list(APPEND SOURCES
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-if (NOT DISABLE_SF3)
+if (ENABLE_SF3 AND STB_VORBIS)
+  list(APPEND SOURCES
+    stb/stb_vorbis.c)
+
+  include_directories(${CMAKE_SOURCE_DIR}/stb)
+endif()
+
+if (ENABLE_SF3 AND NOT STB_VORBIS)
 	pkg_check_modules(LIBVORBIS vorbis>=1.3.5)
 	pkg_check_modules(LIBVORBISFILE vorbisfile>=1.3.5)
 	if (NOT LIBVORBIS_FOUND OR NOT LIBVORBISFILE_FOUND)
@@ -131,9 +138,14 @@ if(FLUIDLITE_BUILD_SHARED AND FLUIDLITE_BUILD_STATIC)
 	set_target_properties(${PROJECT_NAME}-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 endif()
 
-if (DISABLE_SF3)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=0)
-    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=0)
+if (ENABLE_SF3)
+  if (STB_VORBIS)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=SF3_STB_VORBIS)
+    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=SF3_STB_VORBIS)
+  else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=SF3_XIPH_VORBIS)
+    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=SF3_XIPH_VORBIS)
+  endif()
 endif()
 
 configure_file(fluidlite.pc.in ${CMAKE_BINARY_DIR}/fluidlite.pc @ONLY)

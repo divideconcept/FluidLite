@@ -26,7 +26,7 @@
 /* Todo: Get rid of that 'include' */
 #include "fluid_sys.h"
 
-#if SF3_SUPPORT
+#if SF3_SUPPORT == SF3_XIPH_VORBIS
 #include "vorbis/codec.h"
 #include "vorbis/vorbisenc.h"
 #include "vorbis/vorbisfile.h"
@@ -94,6 +94,11 @@ static long ovTell(void* datasource)
     struct VorbisData* vd = (struct VorbisData*)datasource;
     return vd->pos;
 }
+#endif
+
+#if SF3_SUPPORT == SF3_STB_VORBIS
+#define STB_VORBIS_HEADER_ONLY
+#include "stb_vorbis.c"
 #endif
 
 /***************************************************************
@@ -579,13 +584,15 @@ fluid_sample_t* fluid_defsfont_get_sample(fluid_defsfont_t* sfont, char *s)
 #if SF3_SUPPORT
       if (sample->sampletype & FLUID_SAMPLETYPE_OGG_VORBIS) {
         short *sampledata = NULL;
-        int sampledata_size = 0;
+        int sampleframes = 0;
 
+#if SF3_SUPPORT == SF3_XIPH_VORBIS
+        int sampledata_size = 0;
         OggVorbis_File vf;
 
         vorbisData.pos  = 0;
         vorbisData.data = (char*)sample->data + sample->start;
-        vorbisData.datasize = (sample->end + 1 - sample->start);
+        vorbisData.datasize = sample->end + 1 - sample->start;
 
         if (ov_open_callbacks(&vorbisData, &vf, 0, 0, ovCallbacks) == 0) {
 #define BUFFER_SIZE 4096
@@ -607,11 +614,21 @@ fluid_sample_t* fluid_defsfont_get_sample(fluid_defsfont_t* sfont, char *s)
           ov_clear(&vf);
         }
 
+        // because we actually need num of frames so we should divide num of bytes to frame size
+        sampleframes = sampledata_size / sizeof(short);
+#endif
+
+#if SF3_SUPPORT == SF3_STB_VORBIS
+        const uint8 *data = (uint8*)sample->data + sample->start;
+        const int datasize = sample->end + 1 - sample->start;
+
+        int channels;
+        sampleframes = stb_vorbis_decode_memory(data, datasize, &channels, NULL, &sampledata);
+#endif
         // point sample data to uncompressed data stream
         sample->data = sampledata;
         sample->start = 0;
-        // because we actually need num of frames so we should divide num of bytes to frame size
-        sample->end = sampledata_size/sizeof(short) - 1;
+        sample->end = sampleframes - 1;
 
         /* loop is fowled?? (cluck cluck :) */
         if (sample->loopend > sample->end ||
