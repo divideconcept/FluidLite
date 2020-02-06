@@ -1951,16 +1951,17 @@ int fluid_voice_optimize_sample(fluid_sample_t* s)
   int i;
 
   /* ignore ROM and other(?) invalid samples */
-  if (!s->valid || s->sampletype == FLUID_SAMPLETYPE_OGG_VORBIS) return (FLUID_OK);
+  if (!s->valid || (s->sampletype & FLUID_SAMPLETYPE_OGG_VORBIS))
+    return (FLUID_OK);
 
   if (!s->amplitude_that_reaches_noise_floor_is_valid){ /* Only once */
     /* Scan the loop */
     for (i = (int)s->loopstart; i < (int) s->loopend; i ++){
       signed short val = s->data[i];
       if (val > peak_max) {
-	peak_max = val;
+        peak_max = val;
       } else if (val < peak_min) {
-	peak_min = val;
+        peak_min = val;
       }
     }
 
