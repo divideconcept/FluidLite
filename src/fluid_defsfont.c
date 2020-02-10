@@ -2045,7 +2045,7 @@ sfload_file (const char * fname, fluid_fileapi_t* fapi)
       FLUID_LOG (FLUID_ERR, _("Get end of file position failed"));
     }
   if (!err)
-    rewind (fd);
+    fapi->fseek (fd, 0, SEEK_SET);
 
   if (!err && !load_body (fsize, sf, fd, fapi))
     err = TRUE;			/* load the sfont */
