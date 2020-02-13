@@ -1045,7 +1045,7 @@ fluid_defpreset_import_sfont(fluid_defpreset_t* preset,
   fluid_preset_zone_t* zone;
   int count;
   char zone_name[256];
-  if ((sfpreset->name != NULL) && (FLUID_STRLEN(sfpreset->name) > 0)) {
+  if (FLUID_STRLEN(sfpreset->name) > 0) {
     FLUID_STRCPY(preset->name, sfpreset->name);
   } else {
     FLUID_SPRINTF(preset->name, "Bank%d,Preset%d", sfpreset->bank, sfpreset->prenum);
@@ -1445,7 +1445,7 @@ fluid_inst_import_sfont(fluid_inst_t* inst, SFInst *sfinst, fluid_defsfont_t* sf
   int count;
 
   p = sfinst->zone;
-  if ((sfinst->name != NULL) && (FLUID_STRLEN(sfinst->name) > 0)) {
+  if (FLUID_STRLEN(sfinst->name) > 0) {
     FLUID_STRCPY(inst->name, sfinst->name);
   } else {
     FLUID_STRCPY(inst->name, "<untitled>");
@@ -1898,13 +1898,13 @@ fluid_sample_import_sfont(fluid_sample_t* sample, SFSample* sfsample, fluid_defs
 } G_STMT_END
 #else
 #define READCHUNK(var,fd,fapi)	G_STMT_START {      \
-    if (!fapi->fread(var, 8, fd) == FLUID_FAILED)			\
+    if (fapi->fread(var, 8, fd) == FLUID_FAILED)			\
 	return(FAIL);					\
     ((SFChunk *)(var))->size = GUINT32_FROM_LE(((SFChunk *)(var))->size);  \
 } G_STMT_END
 #endif
 #define READID(var,fd,fapi)		G_STMT_START {        \
-    if (!fapi->fread(var, 4, fd) == FLUID_FAILED)			\
+    if (fapi->fread(var, 4, fd) == FLUID_FAILED)			\
 	return(FAIL);					\
 } G_STMT_END
 #define READSTR(var,fd,fapi)		G_STMT_START {      \

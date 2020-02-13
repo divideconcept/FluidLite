@@ -1547,7 +1547,7 @@ fluid_synth_program_change(fluid_synth_t* synth, int chan, int prognum)
 
     if (preset)
       FLUID_LOG(FLUID_WARN, "Instrument not found on channel %d [bank=%d prog=%d], substituted [bank=%d prog=%d]",
-		chan, banknum, prognum, subst_bank, subst_prog); 
+		chan, banknum, prognum, subst_bank, subst_prog);
   }
 
   sfont_id = preset? fluid_sfont_get_id(preset->sfont) : 0;
@@ -2394,6 +2394,9 @@ fluid_synth_alloc_voice(fluid_synth_t* synth, fluid_sample_t* sample, int chan, 
 
   if (chan >= 0) {
 	  channel = synth->channel[chan];
+  } else {
+    FLUID_LOG(FLUID_WARN, "Channel should be valid");
+    return NULL;
   }
 
   if (fluid_voice_init(voice, sample, channel, key, vel,

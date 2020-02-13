@@ -352,7 +352,7 @@ fluid_voice_write(fluid_voice_t* voice,
   if (voice->ticks >= voice->modlfo_delay)
   {
     voice->modlfo_val += voice->modlfo_incr;
-  
+
     if (voice->modlfo_val > 1.0)
     {
       voice->modlfo_incr = -voice->modlfo_incr;
@@ -491,7 +491,7 @@ fluid_voice_write(fluid_voice_t* voice,
     fres = 5;
 
   /* if filter enabled and there is a significant frequency change.. */
-  if ((abs (fres - voice->last_fres) > 0.01))
+  if ((fabs(fres - voice->last_fres) > 0.01))
   {
     /* The filter coefficients have to be recalculated (filter
     * parameters have changed). Recalculation for various reasons is
