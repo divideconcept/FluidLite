@@ -174,7 +174,7 @@ fluid_mod_get_value(fluid_mod_t* mod, fluid_channel_t* chan, fluid_voice_t* voic
 	v1 = voice->key;
 	break;
       case FLUID_MOD_KEYPRESSURE:
-	v1 = chan->key_pressure;
+	v1 = fluid_channel_get_key_pressure(chan, voice->key);
 	break;
       case FLUID_MOD_CHANNELPRESSURE:
 	v1 = chan->channel_pressure;
@@ -267,7 +267,7 @@ fluid_mod_get_value(fluid_mod_t* mod, fluid_channel_t* chan, fluid_voice_t* voic
 	v2 = voice->key;
 	break;
       case FLUID_MOD_KEYPRESSURE:
-	v2 = chan->key_pressure;
+	v2 = fluid_channel_get_key_pressure(chan, voice->key);
 	break;
       case FLUID_MOD_CHANNELPRESSURE:
 	v2 = chan->channel_pressure;

@@ -36,7 +36,7 @@ struct _fluid_channel_t
   unsigned int prognum;
   fluid_preset_t* preset;
   fluid_synth_t* synth;
-  short key_pressure;
+  char key_pressure[128];
   short channel_pressure;
   short pitch_bend;
   short pitch_wheel_sensitivity;
@@ -96,6 +96,10 @@ int fluid_channel_get_num(fluid_channel_t* chan);
 void fluid_channel_set_interp_method(fluid_channel_t* chan, int new_method);
 int fluid_channel_get_interp_method(fluid_channel_t* chan);
 
+#define fluid_channel_get_key_pressure(chan, key) \
+  ((chan)->key_pressure[key])
+#define fluid_channel_set_key_pressure(chan, key, val) \
+  ((chan)->key_pressure[key] = (val))
 #define fluid_channel_set_tuning(_c, _t)        { (_c)->tuning = _t; }
 #define fluid_channel_has_tuning(_c)            ((_c)->tuning != NULL)
 #define fluid_channel_get_tuning(_c)            ((_c)->tuning)

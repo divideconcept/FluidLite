@@ -74,7 +74,6 @@ fluid_channel_init_ctrl(fluid_channel_t* chan, int is_all_ctrl_off)
 {
   int i;
 
-  chan->key_pressure = 0;
   chan->channel_pressure = 0;
   chan->pitch_bend = 0x2000; /* Range is 0x4000, pitch bend wheel starts in centered position */
 
@@ -103,6 +102,11 @@ fluid_channel_init_ctrl(fluid_channel_t* chan, int is_all_ctrl_off)
     for (i = 0; i < 128; i++) {
       SETCC(chan, i, 0);
     }
+  }
+
+  /* Reset polyphonic key pressure on all voices */
+  for (i = 0; i < 128; i++) {
+    fluid_channel_set_key_pressure(chan, i, 0);
   }
 
   /* Set RPN controllers to NULL state */
