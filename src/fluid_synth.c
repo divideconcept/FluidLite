@@ -1319,6 +1319,49 @@ fluid_synth_channel_pressure(fluid_synth_t* synth, int chan, int val)
 }
 
 /**
+ * Set the MIDI polyphonic key pressure controller value.
+ * @param synth FluidSynth instance
+ * @param chan MIDI channel number (0 to MIDI channel count - 1)
+ * @param key MIDI key number (0-127)
+ * @param val MIDI key pressure value (0-127)
+ * @return FLUID_OK on success, FLUID_FAILED otherwise
+ */
+int
+fluid_synth_key_pressure(fluid_synth_t* synth, int chan, int key, int val)
+{
+  int result = FLUID_OK;
+  if (key < 0 || key > 127) {
+    return FLUID_FAILED;
+  }
+  if (val < 0 || val > 127) {
+    return FLUID_FAILED;
+  }
+
+  if (synth->verbose)
+    FLUID_LOG(FLUID_INFO, "keypressure\t%d\t%d\t%d", chan, key, val);
+
+  fluid_channel_set_key_pressure (synth->channel[chan], key, val);
+
+  // fluid_synth_update_key_pressure_LOCAL
+  {
+    fluid_voice_t* voice;
+    int i;
+
+    for (i = 0; i < synth->polyphony; i++) {
+      voice = synth->voice[i];
+
+      if (voice->chan == chan && voice->key == key) {
+        result = fluid_voice_modulate(voice, 0, FLUID_MOD_KEYPRESSURE);
+        if (result != FLUID_OK)
+          break;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Set the MIDI pitch bend controller value.
  * @param synth FluidSynth instance
  * @param chan MIDI channel number
