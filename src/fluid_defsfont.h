@@ -217,7 +217,7 @@ extern unsigned short badpgen[]; 	/* list of bad preset generators */
 /* functions */
 void sfont_init_chunks (void);
 
-void sfont_close (SFData * sf);
+void sfont_close (SFData * sf, fluid_fileapi_t * fileapi);
 void sfont_free_zone (SFZone * zone);
 int sfont_preset_compare_func (void* a, void* b);
 
@@ -296,7 +296,7 @@ SFShdr;
 extern char idlist[];
 
 /* functions */
-SFData *sfload_file (const char * fname);
+SFData *sfload_file (const char * fname, fluid_fileapi_t * fileapi);
 
 
 
@@ -340,7 +340,7 @@ SFData *sfload_file (const char * fname);
 #endif
 
 #define GPOINTER_TO_INT(p)	((int)   (p))
-#define GINT_TO_POINTER(i)      ((void *)  (i))
+#define GINT_TO_POINTER(i)      ((void *)  (long)(i))
 
 char*	 g_strdup		(const char *str);
 
@@ -426,9 +426,6 @@ enum
 #define ErrnoEnd	ErrWrite
 
 int gerr (int ev, char * fmt, ...);
-int safe_fread (void *buf, int count, FILE * fd);
-int safe_fwrite (void *buf, int count, FILE * fd);
-int safe_fseek (FILE * fd, long ofs, int whence);
 
 
 /********************************************************************************/
@@ -493,12 +490,12 @@ struct _fluid_defsfont_t
 
 fluid_defsfont_t* new_fluid_defsfont(void);
 int delete_fluid_defsfont(fluid_defsfont_t* sfont);
-int fluid_defsfont_load(fluid_defsfont_t* sfont, const char* file);
+int fluid_defsfont_load(fluid_defsfont_t* sfont, const char* file, fluid_fileapi_t * fileapi);
 char* fluid_defsfont_get_name(fluid_defsfont_t* sfont);
 fluid_defpreset_t* fluid_defsfont_get_preset(fluid_defsfont_t* sfont, unsigned int bank, unsigned int prenum);
 void fluid_defsfont_iteration_start(fluid_defsfont_t* sfont);
 int fluid_defsfont_iteration_next(fluid_defsfont_t* sfont, fluid_preset_t* preset);
-int fluid_defsfont_load_sampledata(fluid_defsfont_t* sfont);
+int fluid_defsfont_load_sampledata(fluid_defsfont_t* sfont, fluid_fileapi_t * fileapi);
 int fluid_defsfont_add_sample(fluid_defsfont_t* sfont, fluid_sample_t* sample);
 int fluid_defsfont_add_preset(fluid_defsfont_t* sfont, fluid_defpreset_t* preset);
 fluid_sample_t* fluid_defsfont_get_sample(fluid_defsfont_t* sfont, char *s);

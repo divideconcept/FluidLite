@@ -820,8 +820,3 @@ fluid_settings_getint_default(fluid_settings_t* settings, const char* name)
     return 0.0f;
   }
 }
-
-
-
-
-

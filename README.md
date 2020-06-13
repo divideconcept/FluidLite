@@ -1,5 +1,9 @@
-FLUIDLITE 1.0 (c) 2016 Robin Lobel
-=========
+# FluidLite
+
+[![License: LGPL-2.1](https://img.shields.io/badge/License-LGPL--2.1-brightgreen.svg)](https://opensource.org/licenses/LGPL-2.1)
+[![Travis-CI Status](https://travis-ci.com/katyo/fluidlite.svg?branch=master)](https://travis-ci.com/katyo/fluidlite)
+
+FluidLite (c) 2016 Robin Lobel
 
 FluidLite is a very light version of FluidSynth
 designed to be hardware, platform and external dependency independant.
@@ -14,28 +18,48 @@ FluidLite keeps very minimal functionnalities (settings and synth),
 therefore MIDI file reading, realtime MIDI events and audio output must be
 implemented externally.
 
-Usage:
-=====
+## Config
 
-include "fluidlite.h"
+By default SF3 support is disabled. To enable it use `-DENABLE_SF3=YES` with cmake.
 
-fluid_settings_t* settings=new_fluid_settings();  
-fluid_synth_t* synth=new_fluid_synth(settings);  
-fluid_synth_sfload(synth, "soundfont.sf3",1);
+Alternatively it can be configured to use [stb_vorbis](https://github.com/nothings/stb) to decompress SF3 instead of Xiph's [libogg](https://github.com/xiph/ogg)/[libvorbis](https://github.com/xiph/vorbis). You can pass `-DSTB_VORBIS=YES` to cmake to do it.
 
-float* buffer=new float[44100*2];
+## Usage
 
-FILE* file=fopen("float32output.pcm","wb");
+```c
+#include <stdlib.h>
+#include <stdio.h>
 
-fluid_synth_noteon(synth,0,60,127);  
-fluid_synth_write_float(synth, 44100,buffer, 0, 2, buffer, 1, 2);  
-fwrite(buffer,sizeof(float),44100*2,file);
+#include "fluidlite.h"
 
-fluid_synth_noteoff(synth,0,60);  
-fluid_synth_write_float(synth, 44100,buffer, 0, 2, buffer, 1, 2);  
-fwrite(buffer,sizeof(float),44100*2,file);
+#define SAMPLE_RATE 44100
+#define SAMPLE_SIZE sizeof(float)
+#define NUM_FRAMES SAMPLE_RATE
+#define NUM_CHANNELS 2
+#define NUM_SAMPLES (NUM_FRAMES * NUM_CHANNELS)
 
-fclose(file);
+int main() {
+    fluid_settings_t* settings = new_fluid_settings();
+    fluid_synth_t* synth = new_fluid_synth(settings);
+    fluid_synth_sfload(synth, "soundfont.sf2", 1);
 
-delete_fluid_synth(synth);  
-delete_fluid_settings(settings);
+    float* buffer = calloc(SAMPLE_SIZE, NUM_SAMPLES);
+
+    FILE* file = fopen("float32output.pcm", "wb");
+
+    fluid_synth_noteon(synth, 0, 60, 127);
+    fluid_synth_write_float(synth, NUM_FRAMES, buffer, 0, NUM_CHANNELS, buffer, 1, NUM_CHANNELS);
+    fwrite(buffer, SAMPLE_SIZE, NUM_SAMPLES, file);
+
+    fluid_synth_noteoff(synth, 0, 60);
+    fluid_synth_write_float(synth, NUM_FRAMES, buffer, 0, NUM_CHANNELS, buffer, 1, NUM_CHANNELS);
+    fwrite(buffer, SAMPLE_SIZE, NUM_SAMPLES, file);
+
+    fclose(file);
+
+    free(buffer);
+
+    delete_fluid_synth(synth);
+    delete_fluid_settings(settings);
+}
+```

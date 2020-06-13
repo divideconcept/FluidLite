@@ -11,7 +11,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Library General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the Free
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
@@ -54,6 +54,7 @@ typedef struct _fluid_event_t fluid_event_t;
 typedef struct _fluid_sequencer_t fluid_sequencer_t;
 typedef struct _fluid_ramsfont_t fluid_ramsfont_t;
 typedef struct _fluid_rampreset_t fluid_rampreset_t;
+typedef struct _fluid_fileapi_t fluid_fileapi_t;
 
 typedef int fluid_istream_t;
 typedef int fluid_ostream_t;
