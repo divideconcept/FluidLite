@@ -5,6 +5,6 @@ includedir=${prefix}/include
 
 Name: fluidlite
 Description: Software SoundFont synth
-Version: 0.0.1
+Version: 1.2.1
 Libs: -L${libdir} -lfluidlite @ADDITIONAL_LIBS@
 Cflags: -I${includedir}

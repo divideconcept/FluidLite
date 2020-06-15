@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 
-include(FindPkgConfig)
-include(GNUInstallDirs)
-
 project(fluidlite)
+
+include(GNUInstallDirs)
 
 list(APPEND HEADERS
     include/fluidlite.h
@@ -57,6 +56,8 @@ if (ENABLE_SF3 AND STB_VORBIS)
 endif()
 
 if (ENABLE_SF3 AND NOT STB_VORBIS)
+	find_package(PkgConfig QUIET)
+
 	pkg_check_modules(LIBVORBIS vorbis>=1.3.5)
 	pkg_check_modules(LIBVORBISFILE vorbisfile>=1.3.5)
 	if (NOT LIBVORBIS_FOUND OR NOT LIBVORBISFILE_FOUND)
@@ -118,6 +119,7 @@ if(FLUIDLITE_BUILD_STATIC)
 	set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 	set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME}-static)
 	set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";fluidlite-static")
+	set_target_properties(${PROJECT_NAME}-static PROPERTIES C_STANDARD 99)
 endif()
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
@@ -131,6 +133,11 @@ if(FLUIDLITE_BUILD_SHARED)
 	)
 	set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME})
 	set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";fluidlite")
+	set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
+endif()
+
+if((NOT FLUIDLITE_BUILD_SHARED) AND (NOT FLUIDLITE_BUILD_STATIC))
+	message(FATAL_ERROR "Neither dynamic nor static library build is selected.")
 endif()
 
 if(FLUIDLITE_BUILD_SHARED AND FLUIDLITE_BUILD_STATIC)
@@ -140,17 +147,21 @@ endif()
 
 if (ENABLE_SF3)
   if (STB_VORBIS)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=SF3_STB_VORBIS)
-    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=SF3_STB_VORBIS)
+    set(SF3_SUPPORT "SF3_STB_VORBIS")
   else()
-    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=SF3_XIPH_VORBIS)
-    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=SF3_XIPH_VORBIS)
+    set(SF3_SUPPORT "SF3_XIPH_VORBIS")
+  endif()
+
+  if(FLUIDLITE_BUILD_SHARED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=${SF3_SUPPORT})
+  endif()
+  if(FLUIDLITE_BUILD_STATIC)
+    target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=${SF3_SUPPORT})
   endif()
 endif()
 
 configure_file(fluidlite.pc.in ${CMAKE_BINARY_DIR}/fluidlite.pc @ONLY)
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 99)
 install(TARGETS ${FLUIDLITE_INSTALL_TARGETS}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
