@@ -2574,14 +2574,12 @@ fluid_synth_sfload(fluid_synth_t* synth, const char* filename, int reset_presets
   for (list = synth->loaders; list; list = fluid_list_next(list)) {
     loader = (fluid_sfloader_t*) fluid_list_get(list);
 
-    sfont = FLUID_NEW(fluid_sfont_t);
+    sfont = fluid_sfloader_load(loader, filename);
+    if (sfont == NULL)
+        return -1;
+
     sfont->id = ++synth->sfont_id;
     synth->sfont = fluid_list_prepend(synth->sfont, sfont);
-
-    loader->data = sfont;
-    fluid_sfloader_load(loader, filename);
-    loader->data = NULL;
-
 
     if (reset_presets) {
         fluid_synth_program_reset(synth);
