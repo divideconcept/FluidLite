@@ -10,8 +10,8 @@
 #define NUM_SAMPLES (NUM_FRAMES * NUM_CHANNELS)
 
 int main(int argc, char *argv[]) {
-    if (argc < 1) {
-      printf("Usage: %s <soundfont>[ <output>]", argv[0]);
+    if (argc < 2) {
+      printf("Usage: %s <soundfont> [<output>]\n", argv[0]);
       return 1;
     }
 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
     float* buffer = calloc(SAMPLE_SIZE, NUM_SAMPLES);
 
-    FILE* file = argc > 1 ? fopen(argv[2], "wb") : stdout;
+    FILE* file = argc > 2 ? fopen(argv[2], "wb") : stdout;
 
     fluid_synth_noteon(synth, 0, 60, 127);
     fluid_synth_write_float(synth, NUM_FRAMES, buffer, 0, NUM_CHANNELS, buffer, 1, NUM_CHANNELS);
