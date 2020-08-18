@@ -125,11 +125,19 @@ endif()
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
     add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+    # find the math lib
+    find_library(M_LIBRARY m)
+    message(STATUS "Math library: ${M_LIBRARY}")
+    if(NOT M_LIBRARY)
+        set(M_LIBRARY "")
+    endif()
+
     target_link_libraries(${PROJECT_NAME}
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}
         ${LIBOGG_LIBRARIES}
-        m
+        ${M_LIBRARY}
     )
     set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME})
     set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";fluidlite")
