@@ -1559,7 +1559,13 @@ fluid_synth_program_change(fluid_synth_t* synth, int chan, int prognum)
   if (synth->verbose)
     FLUID_LOG(FLUID_INFO, "prog\t%d\t%d\t%d", chan, banknum, prognum);
 
-  preset = fluid_synth_find_preset(synth, banknum, prognum); //if (channel->channum == 9) fluid_synth_find_preset(synth, DRUM_INST_BANK, prognum);
+  if (channel->channum == 9 && fluid_settings_str_equal(synth->settings, "synth.drums-channel.active", "yes")) {
+    preset = fluid_synth_find_preset(synth, DRUM_INST_BANK, prognum);
+  }
+  else
+  {
+    preset = fluid_synth_find_preset(synth, banknum, prognum);
+  }
 
   /* Fallback to another preset if not found */
   if (!preset)
