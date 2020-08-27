@@ -248,6 +248,10 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
 
   case BANK_SELECT_MSB:
     {
+      if (chan->channum == 9 && fluid_settings_str_equal(chan->synth->settings, "synth.drums-channel.active", "yes")) {
+        return FLUID_OK; /* ignored */
+      }
+
       chan->bank_msb = (unsigned char) (value & 0x7f);
 /*      printf("** bank select msb recieved: %d\n", value); */
 
@@ -265,6 +269,9 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
 
   case BANK_SELECT_LSB:
     {
+      if (chan->channum == 9 && fluid_settings_str_equal(chan->synth->settings, "synth.drums-channel.active", "yes")) {
+        return FLUID_OK; /* ignored */
+      }
       /* FIXME: according to the Downloadable Sounds II specification,
          bit 31 should be set when we receive the message on channel
          10 (drum channel) */
