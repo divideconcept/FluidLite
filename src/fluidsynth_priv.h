@@ -84,6 +84,14 @@ typedef signed short       sint16;
 typedef unsigned short     uint16;
 typedef signed int         sint32;
 typedef unsigned int       uint32;
+typedef signed long long   sint64;
+typedef unsigned long long uint64;
+
+#ifdef __LP64__
+typedef uint64             uintptr;
+#else
+typedef uint32             uintptr;
+#endif
 
 //#if defined(MINGW32)
 

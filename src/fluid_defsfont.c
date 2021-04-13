@@ -3103,7 +3103,7 @@ fixup_pgen (SFData * sf)
 {
   fluid_list_t *p, *p2, *p3;
   SFZone *z;
-  int i;
+  uintptr i;
 
   p = sf->preset;
   while (p)
@@ -3138,7 +3138,7 @@ fixup_igen (SFData * sf)
 {
   fluid_list_t *p, *p2, *p3;
   SFZone *z;
-  int i;
+  uintptr i;
 
   p = sf->inst;
   while (p)

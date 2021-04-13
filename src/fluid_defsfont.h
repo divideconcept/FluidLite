@@ -339,8 +339,8 @@ SFData *sfload_file (const char * fname, fluid_fileapi_t * fileapi);
 #define	TRUE	(!FALSE)
 #endif
 
-#define GPOINTER_TO_INT(p)	((int)   (p))
-#define GINT_TO_POINTER(i)      ((void *)  (long)(i))
+#define GPOINTER_TO_INT(p)	((uintptr)   (p))
+#define GINT_TO_POINTER(i)      ((void *)  (uintptr)(i))
 
 char*	 g_strdup		(const char *str);
 
