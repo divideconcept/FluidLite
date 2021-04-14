@@ -747,7 +747,6 @@ int
 fluid_synth_noteon(fluid_synth_t* synth, int chan, int key, int vel)
 {
   fluid_channel_t* channel;
-  int r = FLUID_FAILED;
 
   /* check the ranges of the arguments */
   if ((chan < 0) || (chan >= synth->midi_channels)) {
@@ -1466,7 +1465,6 @@ fluid_synth_get_preset(fluid_synth_t* synth, unsigned int sfontnum,
 {
   fluid_preset_t* preset = NULL;
   fluid_sfont_t* sfont = NULL;
-  fluid_list_t* list = synth->sfont;
   int offset;
 
   sfont = fluid_synth_get_sfont_by_id(synth, sfontnum);

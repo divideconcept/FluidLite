@@ -1,4 +1,4 @@
-// Ogg Vorbis audio decoder - v1.19 - public domain
+// Ogg Vorbis audio decoder - v1.20 - public domain
 // http://nothings.org/stb_vorbis/
 //
 // Original version written by Sean Barrett in 2007.
@@ -31,9 +31,11 @@
 //    Phillip Bennefall  Rohit               Thiago Goulart
 //    github:manxorist   saga musix          github:infatum
 //    Timur Gagiev       Maxwell Koo         Peter Waller
-//    github:audinowho   Dougall Johnson
+//    github:audinowho   Dougall Johnson     David Reid
+//    github:Clownacy    Pedro J. Estebanez  Remi Verschelde
 //
 // Partial history:
+//    1.20    - 2020-07-11 - several small fixes
 //    1.19    - 2020-02-05 - warnings
 //    1.18    - 2020-02-02 - fix seek bugs; parse header comments; misc warnings etc.
 //    1.17    - 2019-07-08 - fix CVE-2019-13217..CVE-2019-13223 (by ForAllSecure)
@@ -133,19 +135,8 @@ typedef struct
    int max_frame_size;
 } stb_vorbis_info;
 
-typedef struct
-{
-   char *vendor;
-
-   int comment_list_length;
-   char **comment_list;
-} stb_vorbis_comment;
-
 // get general information about the file
 extern stb_vorbis_info stb_vorbis_get_info(stb_vorbis *f);
-
-// get ogg comments
-extern stb_vorbis_comment stb_vorbis_get_comment(stb_vorbis *f);
 
 // get the last error detected (clears it, too)
 extern int stb_vorbis_get_error(stb_vorbis *f);
@@ -572,14 +563,6 @@ enum STBVorbisError
    #include <string.h>
    #include <assert.h>
    #include <math.h>
-
-   // find definition of alloca if it's not in stdlib.h:
-   #if defined(_MSC_VER) || defined(__MINGW32__)
-      #include <malloc.h>
-   #endif
-   #if defined(__linux__) || defined(__linux) || defined(__EMSCRIPTEN__)
-      #include <alloca.h>
-   #endif
 #else // STB_VORBIS_NO_CRT
    #define NULL 0
    #define malloc(s)   0
@@ -587,25 +570,31 @@ enum STBVorbisError
    #define realloc(s)  0
 #endif // STB_VORBIS_NO_CRT
 
+/* we need alloca() regardless of STB_VORBIS_NO_CRT,
+ * because there is not a corresponding 'dealloca' */
+#if !defined(alloca)
+# if defined(HAVE_ALLOCA_H)
+#  include <alloca.h>
+# elif defined(__GNUC__)
+#  define alloca __builtin_alloca
+# elif defined(_MSC_VER)
+#  include <malloc.h>
+#  define alloca _alloca
+# elif defined(__WATCOMC__)
+#  include <malloc.h>
+# endif
+#endif
+
 #include <limits.h>
 
-#ifdef __MINGW32__
-   // eff you mingw:
-   //     "fixed":
-   //         http://sourceforge.net/p/mingw-w64/mailman/message/32882927/
-   //     "no that broke the build, reverted, who cares about C":
-   //         http://sourceforge.net/p/mingw-w64/mailman/message/32890381/
-   #ifdef __forceinline
-   #undef __forceinline
-   #endif
-   #define __forceinline
-   #define alloca __builtin_alloca
-#elif !defined(_MSC_VER)
-   #if __GNUC__
-      #define __forceinline inline
-   #else
-      #define __forceinline
-   #endif
+#ifndef STB_FORCEINLINE
+    #if defined(_MSC_VER)
+        #define STB_FORCEINLINE __forceinline
+    #elif defined(__GNUC__) || defined(__clang__)
+        #define STB_FORCEINLINE static __inline __attribute__((always_inline))
+    #else
+        #define STB_FORCEINLINE static __inline
+    #endif
 #endif
 
 #if STB_VORBIS_MAX_CHANNELS > 256
@@ -772,10 +761,6 @@ struct stb_vorbis
    unsigned int setup_memory_required;
    unsigned int temp_memory_required;
    unsigned int setup_temp_memory_required;
-
-   char *vendor;
-   int comment_list_length;
-   char **comment_list;
 
   // input config
 #ifndef STB_VORBIS_NO_STDIO
@@ -961,7 +946,7 @@ static void *setup_temp_malloc(vorb *f, int sz)
 static void setup_temp_free(vorb *f, void *p, int sz)
 {
    if (f->alloc.alloc_buffer) {
-      f->temp_offset += (sz+3)&~3;
+      f->temp_offset += (sz+7)&~7;
       return;
    }
    free(p);
@@ -981,7 +966,7 @@ static void crc32_init(void)
    }
 }
 
-static __forceinline uint32 crc32_update(uint32 crc, uint8 byte)
+STB_FORCEINLINE uint32 crc32_update(uint32 crc, uint8 byte)
 {
    return (crc << 8) ^ crc_table[byte ^ (crc >> 24)];
 }
@@ -1100,7 +1085,7 @@ static int compute_codewords(Codebook *c, uint8 *len, int n, uint32 *values)
       add_entry(c, bit_reverse(res), i, m++, len[i], values);
       // propagate availability up the tree
       if (z != len[i]) {
-         assert(len[i] >= 0 && len[i] < 32);
+         assert(/*len[i] >= 0 &&*/ len[i] < 32);
          for (y=len[i]; y > z; --y) {
             assert(available[y] == 0);
             available[y] = res + (1 << (32-y));
@@ -1560,16 +1545,6 @@ static int get8_packet(vorb *f)
    return x;
 }
 
-static int get32_packet(vorb *f)
-{
-   uint32 x;
-   x = get8_packet(f);
-   x += get8_packet(f) << 8;
-   x += get8_packet(f) << 16;
-   x += (uint32) get8_packet(f) << 24;
-   return x;
-}
-
 static void flush_packet(vorb *f)
 {
    while (get8_packet_raw(f) != EOP);
@@ -1600,7 +1575,8 @@ static uint32 get_bits(vorb *f, int n)
          f->valid_bits += 8;
       }
    }
-   if (f->valid_bits < 0) return 0;
+
+   assert(f->valid_bits >= n);
    z = f->acc & ((1 << n)-1);
    f->acc >>= n;
    f->valid_bits -= n;
@@ -1611,7 +1587,7 @@ static uint32 get_bits(vorb *f, int n)
 // expand the buffer to as many bits as possible without reading off end of packet
 // it might be nice to allow f->valid_bits and f->acc to be stored in registers,
 // e.g. cache them locally and decode locally
-static __forceinline void prep_huffman(vorb *f)
+STB_FORCEINLINE void prep_huffman(vorb *f)
 {
    if (f->valid_bits <= 24) {
       if (f->valid_bits == 0) f->acc = 0;
@@ -2011,7 +1987,7 @@ static float inverse_db_table[256] =
 int8 integer_divide_table[DIVTAB_NUMER][DIVTAB_DENOM]; // 2KB
 #endif
 
-static __forceinline void draw_line(float *output, int x0, int y0, int x1, int y1, int n)
+STB_FORCEINLINE void draw_line(float *output, int x0, int y0, int x1, int y1, int n)
 {
    int dy = y1 - y0;
    int adx = x1 - x0;
@@ -2531,7 +2507,7 @@ static void imdct_step3_inner_s_loop(int n, float *e, int i_off, int k_off, floa
    }
 }
 
-static __forceinline void iter_54(float *z)
+STB_FORCEINLINE void iter_54(float *z)
 {
    float k00,k11,k22,k33;
    float y0,y1,y2,y3;
@@ -3621,41 +3597,6 @@ static int start_decoder(vorb *f)
    if (!start_page(f))                              return FALSE;
 
    if (!start_packet(f))                            return FALSE;
-
-   if (!next_segment(f))                            return FALSE;
-
-   if (get8_packet(f) != VORBIS_packet_comment)            return error(f, VORBIS_invalid_setup);
-   for (i=0; i < 6; ++i) header[i] = get8_packet(f);
-   if (!vorbis_validate(header))                    return error(f, VORBIS_invalid_setup);
-   //file vendor
-   len = get32_packet(f);
-   f->vendor = (char*)setup_malloc(f, sizeof(char) * (len+1));
-   for(i=0; i < len; ++i) {
-      f->vendor[i] = get8_packet(f);
-   }
-   f->vendor[len] = (char)'\0';
-   //user comments
-   f->comment_list_length = get32_packet(f);
-   f->comment_list = (char**)setup_malloc(f, sizeof(char*) * (f->comment_list_length));
-
-   for(i=0; i < f->comment_list_length; ++i) {
-      len = get32_packet(f);
-      f->comment_list[i] = (char*)setup_malloc(f, sizeof(char) * (len+1));
-
-      for(j=0; j < len; ++j) {
-         f->comment_list[i][j] = get8_packet(f);
-      }
-      f->comment_list[i][len] = (char)'\0';
-   }
-
-   // framing_flag
-   x = get8_packet(f);
-   if (!(x & 1))                                    return error(f, VORBIS_invalid_setup);
-
-
-   skip(f, f->bytes_in_seg);
-   f->bytes_in_seg = 0;
-
    do {
       len = next_segment(f);
       skip(f, len);
@@ -4181,13 +4122,6 @@ static int start_decoder(vorb *f)
 static void vorbis_deinit(stb_vorbis *p)
 {
    int i,j;
-
-   setup_free(p, p->vendor);
-   for (i=0; i < p->comment_list_length; ++i) {
-      setup_free(p, p->comment_list[i]);
-   }
-   setup_free(p, p->comment_list);
-
    if (p->residue_config) {
       for (i=0; i < p->residue_count; ++i) {
          Residue *r = p->residue_config+i;
@@ -4253,7 +4187,7 @@ static void vorbis_init(stb_vorbis *p, const stb_vorbis_alloc *z)
    memset(p, 0, sizeof(*p)); // NULL out all malloc'd pointers to start
    if (z) {
       p->alloc = *z;
-      p->alloc.alloc_buffer_length_in_bytes = (p->alloc.alloc_buffer_length_in_bytes+3) & ~3;
+      p->alloc.alloc_buffer_length_in_bytes &= ~7;
       p->temp_offset = p->alloc.alloc_buffer_length_in_bytes;
    }
    p->eof = 0;
@@ -4284,15 +4218,6 @@ stb_vorbis_info stb_vorbis_get_info(stb_vorbis *f)
    d.setup_temp_memory_required = f->setup_temp_memory_required;
    d.temp_memory_required = f->temp_memory_required;
    d.max_frame_size = f->blocksize_1 >> 1;
-   return d;
-}
-
-stb_vorbis_comment stb_vorbis_get_comment(stb_vorbis *f)
-{
-   stb_vorbis_comment d;
-   d.vendor = f->vendor;
-   d.comment_list_length = f->comment_list_length;
-   d.comment_list = f->comment_list;
    return d;
 }
 

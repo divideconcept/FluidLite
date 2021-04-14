@@ -251,8 +251,6 @@ fluid_voice_write(fluid_voice_t* voice,
   fluid_real_t target_amp;	/* target amplitude */
   int count;
 
-  int dsp_interp_method = voice->interp_method;
-
   fluid_real_t dsp_buf[FLUID_BUFSIZE];
   fluid_env_data_t* env_data;
   fluid_real_t x;
@@ -638,7 +636,7 @@ fluid_voice_write(fluid_voice_t* voice,
  * - dsp_hist2: same
  *
  */
-static __inline void
+static void
 fluid_voice_effects (fluid_voice_t *voice, int count,
 		     fluid_real_t* dsp_left_buf, fluid_real_t* dsp_right_buf,
 		     fluid_real_t* dsp_reverb_buf, fluid_real_t* dsp_chorus_buf)
