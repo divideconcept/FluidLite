@@ -78,8 +78,9 @@ typedef enum {
 
 /** Integer types  */
 
-typedef signed char       sint8;
-typedef unsigned char     uint8;
+#if 1 /**/
+typedef signed char        sint8;
+typedef unsigned char      uint8;
 typedef signed short       sint16;
 typedef unsigned short     uint16;
 typedef signed int         sint32;
@@ -93,56 +94,58 @@ typedef uint64             uintptr;
 typedef uint32             uintptr;
 #endif
 
-//#if defined(MINGW32)
+#else /**/
+#if defined(MINGW32)
 
-///* Windows using MinGW32 */
-//typedef int8_t             sint8;
-//typedef uint8_t            uint8;
-//typedef int16_t            sint16;
-//typedef uint16_t           uint16;
-//typedef int32_t            sint32;
-//typedef uint32_t           uint32;
-//typedef int64_t            sint64;
-//typedef uint64_t           uint64;
+/* Windows using MinGW32 */
+typedef int8_t             sint8;
+typedef uint8_t            uint8;
+typedef int16_t            sint16;
+typedef uint16_t           uint16;
+typedef int32_t            sint32;
+typedef uint32_t           uint32;
+typedef int64_t            sint64;
+typedef uint64_t           uint64;
 
-//#elif defined(_WIN32)
+#elif defined(_WIN32)
 
-///* Windows */
-//typedef signed __int8      sint8;
-//typedef unsigned __int8    uint8;
-//typedef signed __int16     sint16;
-//typedef unsigned __int16   uint16;
-//typedef signed __int32     sint32;
-//typedef unsigned __int32   uint32;
-//typedef signed __int64     sint64;
-//typedef unsigned __int64   uint64;
+/* Windows */
+typedef signed __int8      sint8;
+typedef unsigned __int8    uint8;
+typedef signed __int16     sint16;
+typedef unsigned __int16   uint16;
+typedef signed __int32     sint32;
+typedef unsigned __int32   uint32;
+typedef signed __int64     sint64;
+typedef unsigned __int64   uint64;
 
-//#elif defined(MACOS9)
+#elif defined(MACOS9)
 
-///* Macintosh */
-//typedef signed char        sint8;
-//typedef unsigned char      uint8;
-//typedef signed short       sint16;
-//typedef unsigned short     uint16;
-//typedef signed int         sint32;
-//typedef unsigned int       uint32;
-///* FIXME: needs to be verified */
-//typedef long long          sint64;
-//typedef unsigned long long uint64;
+/* Macintosh */
+typedef signed char        sint8;
+typedef unsigned char      uint8;
+typedef signed short       sint16;
+typedef unsigned short     uint16;
+typedef signed int         sint32;
+typedef unsigned int       uint32;
+/* FIXME: needs to be verified */
+typedef long long          sint64;
+typedef unsigned long long uint64;
 
-//#else
+#else
 
-///* Linux & Darwin */
-//typedef int8_t             sint8;
-//typedef u_int8_t           uint8;
-//typedef int16_t            sint16;
-//typedef u_int16_t          uint16;
-//typedef int32_t            sint32;
-//typedef u_int32_t          uint32;
-//typedef int64_t            sint64;
-//typedef u_int64_t          uint64;
+/* Linux & Darwin */
+typedef int8_t             sint8;
+typedef u_int8_t           uint8;
+typedef int16_t            sint16;
+typedef u_int16_t          uint16;
+typedef int32_t            sint32;
+typedef u_int32_t          uint32;
+typedef int64_t            sint64;
+typedef u_int64_t          uint64;
 
-//#endif
+#endif
+#endif /* */
 
 
 /***************************************************************
@@ -190,11 +193,7 @@ typedef FILE*  fluid_file;
 #define FLUID_STRNCMP(_s,_t,_n)      strncmp(_s,_t,_n)
 #define FLUID_STRCPY(_dst,_src)      strcpy(_dst,_src)
 #define FLUID_STRCHR(_s,_c)          strchr(_s,_c)
-#ifdef strdup
 #define FLUID_STRDUP(s)              strdup(s)
-#else
-#define FLUID_STRDUP(s) 		    FLUID_STRCPY(FLUID_MALLOC(FLUID_STRLEN(s) + 1), s)
-#endif
 #define FLUID_SPRINTF                sprintf
 #define FLUID_FPRINTF                fprintf
 
