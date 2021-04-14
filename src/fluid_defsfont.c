@@ -1910,7 +1910,7 @@ fluid_sample_import_sfont(fluid_sample_t* sample, SFSample* sfsample, fluid_defs
 #define READSTR(var,fd,fapi)		G_STMT_START {      \
     if (fapi->fread(var, 20, fd) == FLUID_FAILED)			\
 	return(FAIL);					\
-    (*var)[20] = '\0';					\
+    (var)[20] = '\0';					\
 } G_STMT_END
 #ifdef WORDS_BIGENDIAN
 #define READD(var,fd,fapi)		G_STMT_START {        \
@@ -1998,7 +1998,7 @@ chunkid (unsigned int id)
   unsigned int i;
   unsigned int *p;
 
-  p = (unsigned int *) & idlist;
+  p = (unsigned int *) idlist;
   for (i = 0; i < sizeof (idlist) / sizeof (int); i++, p += 1)
     if (*p == id)
       return (i + 1);
@@ -2361,7 +2361,7 @@ load_phdr (int size, SFData * sf, void * fd, fluid_fileapi_t* fapi)
       p = FLUID_NEW (SFPreset);
       sf->preset = fluid_list_append (sf->preset, p);
       p->zone = NULL;		/* In case of failure, sfont_close can cleanup */
-      READSTR (&p->name, fd, fapi);	/* possible read failure ^ */
+      READSTR (p->name, fd, fapi);	/* possible read failure ^ */
       READW (p->prenum, fd, fapi);
       READW (p->bank, fd, fapi);
       READW (zndx, fd, fapi);
@@ -2730,7 +2730,7 @@ load_ihdr (int size, SFData * sf, void * fd, fluid_fileapi_t* fapi)
       p = FLUID_NEW (SFInst);
       sf->inst = fluid_list_append (sf->inst, p);
       p->zone = NULL;		/* For proper cleanup if fail (sfont_close) */
-      READSTR (&p->name, fd, fapi);	/* Possible read failure ^ */
+      READSTR (p->name, fd, fapi);	/* Possible read failure ^ */
       READW (zndx, fd, fapi);
 
       if (pr)
@@ -3079,7 +3079,7 @@ load_shdr (unsigned int size, SFData * sf, void * fd, fluid_fileapi_t* fapi)
     {
       p = FLUID_NEW (SFSample);
       sf->sample = fluid_list_append (sf->sample, p);
-      READSTR (&p->name, fd, fapi);
+      READSTR (p->name, fd, fapi);
       READD (p->start, fd, fapi);
       READD (p->end, fd, fapi);	/* - end, loopstart and loopend */
       READD (p->loopstart, fd, fapi);	/* - will be checked and turned into */
