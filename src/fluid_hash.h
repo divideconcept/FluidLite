@@ -41,7 +41,7 @@
 typedef int (*fluid_hash_iter_t)(char* key, void* value, int type, void* data);
 typedef void (*fluid_hash_delete_t)(void* value, int type);
 
-fluid_hashtable_t* new_fluid_hashtable(fluid_hash_delete_t delete);
+fluid_hashtable_t* new_fluid_hashtable(fluid_hash_delete_t delete_func);
 void delete_fluid_hashtable(fluid_hashtable_t *hash_table);
 
 void fluid_hashtable_insert(fluid_hashtable_t *hash_table, char* key, void* value, int type);
