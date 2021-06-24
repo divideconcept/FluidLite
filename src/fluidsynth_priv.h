@@ -193,7 +193,7 @@ typedef FILE*  fluid_file;
 #define FLUID_STRNCMP(_s,_t,_n)      strncmp(_s,_t,_n)
 #define FLUID_STRCPY(_dst,_src)      strcpy(_dst,_src)
 #define FLUID_STRCHR(_s,_c)          strchr(_s,_c)
-#define FLUID_STRDUP(s)              FLUID_STRCPY(FLUID_MALLOC(FLUID_STRLEN(s) + 1), s) //strdup(s) seems to cause a segfault, see discussion here: https://github.com/divideconcept/FluidLite/commit/cd7578bef6e952e6e43205bf7a87b972e833468b
+#define FLUID_STRDUP(s)              FLUID_STRCPY((char*)FLUID_MALLOC(FLUID_STRLEN(s) + 1), s)
 #define FLUID_SPRINTF                sprintf
 #define FLUID_FPRINTF                fprintf
 
