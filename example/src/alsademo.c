@@ -44,7 +44,8 @@ int main() {
   fluid_settings_t* settings = new_fluid_settings();
   synth = new_fluid_synth(settings);
  // fluid_synth_sfload(synth, "../sf_/Boomwhacker.sf2", 1);
-  fluid_synth_sfload(synth, "./soundfont.sf2", 1);
+  fluid_synth_sfload(synth, "../sf_/sitar.sf2", 1);
+//  fluid_synth_sfload(synth, "./soundfont.sf2", 1);
 //  flbuffer = (float *)calloc( SAMPLE_SIZE, NUM_SAMPLES );
     float* flbuffer = calloc(SAMPLE_SIZE, NUM_SAMPLES);
 
