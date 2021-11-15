@@ -701,10 +701,12 @@ FLUIDSYNTH_API void fluid_synth_get_voicelist(fluid_synth_t* synth,
 					    fluid_voice_t* buf[], int bufsize, int ID);
 
 
-//midi router disabled
-//  /** This is a hack to get command handlers working */
-//FLUIDSYNTH_API void fluid_synth_set_midi_router(fluid_synth_t* synth,
-//					      fluid_midi_router_t* router);
+/* midi router disabled */
+#if 0
+  /** This is a hack to get command handlers working */
+FLUIDSYNTH_API void fluid_synth_set_midi_router(fluid_synth_t* synth,
+					      fluid_midi_router_t* router);
+#endif
 
 #ifdef __cplusplus
 }
