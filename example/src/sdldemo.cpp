@@ -4,6 +4,9 @@
 #include "SDL/SDL.h"
 #include "fluidlite.h"
 
+//based on code found from http://blog.csdn.net/leixiaohua1020
+//Simplest Audio Play SDL2 (SDL2 play PCM) 
+
 //gcc sdldemo.cpp -L../../ -lfluidlite -lSDL -lm -I../../include -o sdldemo -lstdc++
 
 using namespace std;
