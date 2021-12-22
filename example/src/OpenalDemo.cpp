@@ -1,5 +1,4 @@
-﻿
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 
@@ -9,7 +8,27 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include <fluidsynth/fluidsynth.h>
+#include <memory.h>
+#include <string.h>
+#include <cstring>
+#include <type_traits>
+
+#include <fluidlite.h>
+#include <openal.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <assert.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <math.h>
+
+//gcc OpenalDemo.cpp -lopenal -lasound -I../../include -L../../ -lfluidlite
+
+
+using namespace std;
 
 #define BACKEND	"libaudio"
 

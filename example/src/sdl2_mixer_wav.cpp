@@ -3,7 +3,7 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
-#include <fluidsynth/fluidsynth.h>
+#include <fluidlite.h>
 
 using namespace std;
 
@@ -18,11 +18,16 @@ Mix_Chunk* wave = NULL;
 #define NUM_SAMPLES (NUM_FRAMES * NUM_CHANNELS)
 #define TIME_INTERVAL 1000000 //1500000:duration us
 
-int SDL_main(int argc, char* argv[])
+//-L../../ -lfluidlite
+
+//gcc sdl2_mixer_wav.cpp -lSDL2 -lfluidlite -I../../include -L../../ -lstdc++ -lSDL2_mixer
+
+
+int main(int argc, char* argv[])
 {
     fluid_settings_t* settings = new_fluid_settings();
     fluid_synth_t* synth = new_fluid_synth(settings);
-    int res = fluid_synth_sfload(synth, "soundfont.sf2", 1);
+    int res = fluid_synth_sfload(synth, "sitar.sf2", 1);
 
     if (res <= 0)
     {
