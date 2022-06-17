@@ -14,7 +14,7 @@
 #include <type_traits>
 
 #include <fluidlite.h>
-#include <openal.h>
+//#include <openal.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +24,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <math.h>
+
+#include <type_traits>
+#include <new>
 
 //gcc OpenalDemo.cpp -lopenal -lasound -I../../include -L../../ -lfluidlite
 
@@ -339,7 +342,7 @@ int main()
 {
     fluid_settings_t* settings = new_fluid_settings();
     fluid_synth_t* synth = new_fluid_synth(settings);
-    int res = fluid_synth_sfload(synth, "soundfont.sf2", 1);
+    int res = fluid_synth_sfload(synth, "../sf_/Boomwhacker.sf2", 1);
 
     if (res <= 0)
     {
@@ -433,7 +436,7 @@ int main()
     free(soundData);
 
     cout << "Sound play End\n";
-    
+
 
     alcCall(alcMakeContextCurrent, contextMadeCurrent, openALDevice, nullptr);
     alcCall(alcDestroyContext, openALDevice, openALContext);
