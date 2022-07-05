@@ -1,4 +1,4 @@
-/* FluidSynth - A Software Synthesizer
+/* FluidLite - A Software Synthesizer
  *
  * Copyright (C) 2003  Peter Hanappe and others.
  *
@@ -18,8 +18,8 @@
  * 02111-1307, USA
  */
 
-#ifndef _FLUIDSYNTH_H
-#define _FLUIDSYNTH_H
+#ifndef _FLUIDLITE_H
+#define _FLUIDLITE_H
 
 #include <stdio.h>
 
@@ -51,10 +51,10 @@ extern "C" {
 #endif
 
 /**
- * @file fluidsynth.h
- * @brief FluidSynth is a real-time synthesizer designed for SoundFont(R) files.
+ * @file fluidlite.h
+ * @brief FluidLite is a real-time synthesizer designed for SoundFont(R) files.
  *
- * This is the header of the fluidsynth library and contains the
+ * This is the header of the fluidlite library and contains the
  * synthesizer's public API.
  *
  * Depending on how you want to use or extend the synthesizer you
@@ -82,21 +82,21 @@ extern "C" {
  * SoundFont(R) is a registered trademark of E-mu Systems, Inc.
  */
 
-#include "fluidsynth/types.h"
-#include "fluidsynth/settings.h"
-#include "fluidsynth/synth.h"
-#include "fluidsynth/sfont.h"
-#include "fluidsynth/ramsfont.h"
-#include "fluidsynth/log.h"
-#include "fluidsynth/misc.h"
-#include "fluidsynth/mod.h"
-#include "fluidsynth/gen.h"
-#include "fluidsynth/voice.h"
-#include "fluidsynth/version.h"
+#include "fluidlite/types.h"
+#include "fluidlite/settings.h"
+#include "fluidlite/synth.h"
+#include "fluidlite/sfont.h"
+#include "fluidlite/ramsfont.h"
+#include "fluidlite/log.h"
+#include "fluidlite/misc.h"
+#include "fluidlite/mod.h"
+#include "fluidlite/gen.h"
+#include "fluidlite/voice.h"
+#include "fluidlite/version.h"
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _FLUIDSYNTH_H */
+#endif /* _FLUIDLITE_H */

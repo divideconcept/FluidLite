@@ -1,4 +1,4 @@
-/* FluidSynth - A Software Synthesizer
+/* FluidLite - A Software Synthesizer
  *
  * Copyright (C) 2003  Peter Hanappe and others.
  *
@@ -18,18 +18,18 @@
  * 02111-1307, USA
  */
 
-#ifndef _FLUIDSYNTH_VERSION_H
-#define _FLUIDSYNTH_VERSION_H
+#ifndef _FLUIDLITE_VERSION_H
+#define _FLUIDLITE_VERSION_H
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define FLUIDSYNTH_VERSION       "1.2.1"
-#define FLUIDSYNTH_VERSION_MAJOR 1
-#define FLUIDSYNTH_VERSION_MINOR 2
-#define FLUIDSYNTH_VERSION_MICRO 1
+#define FLUIDLITE_VERSION       "@fluidlite_VERSION@"
+#define FLUIDLITE_VERSION_MAJOR @fluidlite_VERSION_MAJOR@
+#define FLUIDLITE_VERSION_MINOR @fluidlite_VERSION_MINOR@
+#define FLUIDLITE_VERSION_MICRO @fluidlite_VERSION_PATCH@
 
 
 FLUIDSYNTH_API void fluid_version(int *major, int *minor, int *micro);
@@ -41,4 +41,4 @@ FLUIDSYNTH_API char* fluid_version_str(void);
 }
 #endif
 
-#endif /* _FLUIDSYNTH_VERSION_H */
+#endif /* _FLUIDLITE_VERSION_H */

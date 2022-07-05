@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(fluidlite)
+project(fluidlite
+    LANGUAGES C
+    VERSION 1.2.2
+)
 
 include(GNUInstallDirs)
 
@@ -8,20 +11,26 @@ list(APPEND HEADERS
     include/fluidlite.h
 )
 
+configure_file(src/version.cmake ${PROJECT_BINARY_DIR}/fluidlite/version.h @ONLY)
+
 list(APPEND SCOPED_HEADERS
-    include/fluidsynth/types.h
-    include/fluidsynth/settings.h
-    include/fluidsynth/synth.h
-    include/fluidsynth/sfont.h
-    include/fluidsynth/ramsfont.h
-    include/fluidsynth/log.h
-    include/fluidsynth/misc.h
-    include/fluidsynth/mod.h
-    include/fluidsynth/gen.h
-    include/fluidsynth/voice.h
-    include/fluidsynth/version.h
+    include/fluidlite/types.h
+    include/fluidlite/settings.h
+    include/fluidlite/synth.h
+    include/fluidlite/sfont.h
+    include/fluidlite/ramsfont.h
+    include/fluidlite/log.h
+    include/fluidlite/misc.h
+    include/fluidlite/mod.h
+    include/fluidlite/gen.h
+    include/fluidlite/voice.h
+    ${PROJECT_BINARY_DIR}/fluidlite/version.h
 )
 
+option(ENABLE_SF3 "Enable SF3 files (ogg compressed samples" FALSE)
+option(STB_VORBIS "Use STB VORBIS library instead of ogg/vorbis" FALSE)
+
+configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
 
 list(APPEND SOURCES
     src/fluid_init.c
@@ -45,14 +54,15 @@ list(APPEND SOURCES
 
 # Dependencies:
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR})
 
 if (ENABLE_SF3 AND STB_VORBIS)
     list(APPEND SOURCES
         stb/stb_vorbis.c)
 
-    include_directories(${CMAKE_SOURCE_DIR}/stb)
+    include_directories(${PROJECT_SOURCE_DIR}/stb)
 endif()
 
 if (ENABLE_SF3 AND NOT STB_VORBIS)
@@ -86,8 +96,8 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
             libvorbis-1.3.5/lib/synthesis.c
         )
         list(APPEND LIBVORBIS_INCLUDE_DIRS
-            ${CMAKE_SOURCE_DIR}/libvorbis-1.3.5/include
-            ${CMAKE_SOURCE_DIR}/libvorbis-1.3.5/lib
+            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/include
+            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/lib
         )
         message(WARNING "Using libvorbis shipped sources.")
     else()
@@ -113,13 +123,16 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
     include_directories(${LIBVORBIS_INCLUDE_DIRS})
 endif()
 
+add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
 option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
 if(FLUIDLITE_BUILD_STATIC)
-    add_library(${PROJECT_NAME}-static STATIC ${SOURCES})
+    add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
     set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
     set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME}-static)
-    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";fluidlite-static")
-    set_target_properties(${PROJECT_NAME}-static PROPERTIES C_STANDARD 99)
+    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";${PROJECT_NAME}-static")
     if(WIN32)
         target_compile_definitions(${PROJECT_NAME}-static PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
@@ -127,7 +140,7 @@ endif()
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
-    add_library(${PROJECT_NAME} SHARED ${SOURCES})
+    add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
 
     # find the math lib
     find_library(M_LIBRARY m)
@@ -143,8 +156,9 @@ if(FLUIDLITE_BUILD_SHARED)
         ${M_LIBRARY}
     )
     set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME})
-    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";fluidlite")
-    set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
+    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";${PROJECT_NAME}")
+    set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+    set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     if(WIN32)
         target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
@@ -174,12 +188,22 @@ if (ENABLE_SF3)
     endif()
 endif()
 
-configure_file(fluidlite.pc.in ${CMAKE_BINARY_DIR}/fluidlite.pc @ONLY)
+if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
+    set(fluidlite_libdir "${CMAKE_INSTALL_LIBDIR}")
+else()
+    set(fluidlite_libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+if(IS_ABSOLUTE ${CMAKE_INSTALL_INCLUDEDIR})
+    set(fluidlite_includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+else()
+    set(fluidlite_includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+configure_file(fluidlite.pc.in ${PROJECT_BINARY_DIR}/fluidlite.pc @ONLY)
 
 install(TARGETS ${FLUIDLITE_INSTALL_TARGETS}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${SCOPED_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluidsynth)
+install(FILES ${SCOPED_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluidlite)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fluidlite.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
