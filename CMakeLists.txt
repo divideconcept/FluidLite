@@ -69,19 +69,6 @@ list(APPEND SOURCES
     src/fluid_voice.c
 )
 
-# Common object library for the static and dynamic targets
-
-add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-if(WIN32)
-    target_compile_definitions(${PROJECT_NAME}-obj PRIVATE _CRT_SECURE_NO_WARNINGS)
-endif()
-
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_BINARY_DIR})
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
 # Dependencies:
 
 # find the math lib
@@ -146,14 +133,10 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
         message(STATUS "Using pkg-config provided libogg")
         set(ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBOGG_LDFLAGS}")
     endif()
-
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBOGG_INCLUDE_DIRS})
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBVORBIS_INCLUDE_DIRS})
 endif()
 
 if (ENABLE_SF3 AND STB_VORBIS)
     list(APPEND SOURCES stb/stb_vorbis.c)
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
 if (ENABLE_SF3)
@@ -167,6 +150,27 @@ else()
 endif()
 
 configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
+
+# Common object library for the static and dynamic targets
+
+add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME}-obj PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_BINARY_DIR})
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+if (ENABLE_SF3 AND NOT STB_VORBIS)
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBOGG_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBVORBIS_INCLUDE_DIRS})
+endif()
+if (ENABLE_SF3 AND STB_VORBIS)
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/stb)
+endif()
 
 option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
 if(FLUIDLITE_BUILD_STATIC)
