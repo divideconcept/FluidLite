@@ -7,6 +7,28 @@ project(fluidlite
 
 include(GNUInstallDirs)
 
+option(ENABLE_SF3 "Enable SF3 files (ogg/vorbis compressed samples)" FALSE)
+option(STB_VORBIS "Use STB VORBIS library instead of ogg/vorbis" FALSE)
+option(WITH_FLOAT "Use 32 bit float type samples (instead of 64 bit double type)" TRUE)
+
+string(TOLOWER ${CMAKE_BUILD_TYPE} LOWERCASE_BUILD_TYPE)
+if(${LOWERCASE_BUILD_TYPE} STREQUAL "debug")
+    set(DEBUG TRUE)
+endif()
+include(TestBigEndian)
+test_big_endian(WORDS_BIGENDIAN)
+include(CheckIncludeFiles)
+check_include_files("stdlib.h;stdio.h;stdarg.h;string.h;float.h;limits.h;math.h" STDC_HEADERS)
+set(HAVE_STDLIB_H ${STDC_HEADERS} CACHE INTERNAL "Have include stdlib.h")
+set(HAVE_STDIO_H ${STDC_HEADERS} CACHE INTERNAL "Have include stdio.h")
+set(HAVE_STDARG_H ${STDC_HEADERS} CACHE INTERNAL "Have include stdarg.h")
+set(HAVE_STRING_H ${STDC_HEADERS} CACHE INTERNAL "Have include string.h")
+set(HAVE_FLOAT_H ${STDC_HEADERS} CACHE INTERNAL "Have include float.h")
+set(HAVE_LIMITS_H ${STDC_HEADERS} CACHE INTERNAL "Have include limits.h")
+set(HAVE_MATH_H ${STDC_HEADERS} CACHE INTERNAL "Have include math.h")
+include(CheckIncludeFile)
+check_include_file(fcntl.h HAVE_FCNTL_H)
+
 list(APPEND HEADERS
     include/fluidlite.h
 )
@@ -26,11 +48,6 @@ list(APPEND SCOPED_HEADERS
     include/fluidlite/voice.h
     ${PROJECT_BINARY_DIR}/fluidlite/version.h
 )
-
-option(ENABLE_SF3 "Enable SF3 files (ogg compressed samples" FALSE)
-option(STB_VORBIS "Use STB VORBIS library instead of ogg/vorbis" FALSE)
-
-configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
 
 list(APPEND SOURCES
     src/fluid_init.c
@@ -52,22 +69,33 @@ list(APPEND SOURCES
     src/fluid_voice.c
 )
 
+# Common object library for the static and dynamic targets
+
+add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
+set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME}-obj PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_BINARY_DIR})
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
 # Dependencies:
 
-include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_BINARY_DIR})
-
-if (ENABLE_SF3 AND STB_VORBIS)
-    list(APPEND SOURCES
-        stb/stb_vorbis.c)
-
-    include_directories(${PROJECT_SOURCE_DIR}/stb)
+# find the math lib
+find_library(M_LIBRARY m)
+message(STATUS "Math library: ${M_LIBRARY}")
+if(M_LIBRARY)
+    set(ADDITIONAL_LIBS "-lm")
+else()
+    set(M_LIBRARY "")
+    set(ADDITIONAL_LIBS "")
 endif()
 
 if (ENABLE_SF3 AND NOT STB_VORBIS)
     find_package(PkgConfig QUIET)
-
     pkg_check_modules(LIBVORBIS vorbis>=1.3.5)
     pkg_check_modules(LIBVORBISFILE vorbisfile>=1.3.5)
     if (NOT LIBVORBIS_FOUND OR NOT LIBVORBISFILE_FOUND)
@@ -102,7 +130,7 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
         message(WARNING "Using libvorbis shipped sources.")
     else()
         message(STATUS "Using pkg-config provided libvorbis")
-        set(ADDITIONAL_LIBS "${LIBVORBIS_LDFLAGS} ${LIBVORBISFILE_LDFLAGS}")
+        set(ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBVORBIS_LDFLAGS} ${LIBVORBISFILE_LDFLAGS}")
     endif()
 
     pkg_check_modules(LIBOGG ogg>=1.3.2)
@@ -116,61 +144,16 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
         message(WARNING "Using libogg shipped sources.")
     else()
         message(STATUS "Using pkg-config provided libogg")
-        string(CONCAT ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBOGG_LDFLAGS}")
+        set(ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBOGG_LDFLAGS}")
     endif()
 
-    include_directories(${LIBOGG_INCLUDE_DIRS})
-    include_directories(${LIBVORBIS_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBOGG_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBVORBIS_INCLUDE_DIRS})
 endif()
 
-add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-
-option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
-if(FLUIDLITE_BUILD_STATIC)
-    add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-    set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-    set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME}-static)
-    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";${PROJECT_NAME}-static")
-    if(WIN32)
-        target_compile_definitions(${PROJECT_NAME}-static PRIVATE _CRT_SECURE_NO_WARNINGS)
-    endif()
-endif()
-
-option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
-if(FLUIDLITE_BUILD_SHARED)
-    add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-
-    # find the math lib
-    find_library(M_LIBRARY m)
-    message(STATUS "Math library: ${M_LIBRARY}")
-    if(NOT M_LIBRARY)
-        set(M_LIBRARY "")
-    endif()
-
-    target_link_libraries(${PROJECT_NAME}
-        ${LIBVORBIS_LIBRARIES}
-        ${LIBVORBISFILE_LIBRARIES}
-        ${LIBOGG_LIBRARIES}
-        ${M_LIBRARY}
-    )
-    set(FLUIDLITE_LIB_TARGET ${PROJECT_NAME})
-    set(FLUIDLITE_INSTALL_TARGETS ${FLUIDLITE_INSTALL_TARGETS} ";${PROJECT_NAME}")
-    set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-    set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
-    if(WIN32)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
-    endif()
-endif()
-
-if((NOT FLUIDLITE_BUILD_SHARED) AND (NOT FLUIDLITE_BUILD_STATIC))
-    message(FATAL_ERROR "Neither dynamic nor static library build is selected.")
-endif()
-
-if(FLUIDLITE_BUILD_SHARED AND FLUIDLITE_BUILD_STATIC)
-    set_target_properties(${PROJECT_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
-    set_target_properties(${PROJECT_NAME}-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+if (ENABLE_SF3 AND STB_VORBIS)
+    list(APPEND SOURCES stb/stb_vorbis.c)
+    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
 if (ENABLE_SF3)
@@ -179,13 +162,35 @@ if (ENABLE_SF3)
     else()
         set(SF3_SUPPORT "SF3_XIPH_VORBIS")
     endif()
+else()
+    set(SF3_SUPPORT "SF3_DISABLED")
+endif()
 
-    if(FLUIDLITE_BUILD_SHARED)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC SF3_SUPPORT=${SF3_SUPPORT})
-    endif()
-    if(FLUIDLITE_BUILD_STATIC)
-        target_compile_definitions(${PROJECT_NAME}-static PUBLIC SF3_SUPPORT=${SF3_SUPPORT})
-    endif()
+configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
+
+option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
+if(FLUIDLITE_BUILD_STATIC)
+    add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+    list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME}-static)
+endif()
+
+option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
+if(FLUIDLITE_BUILD_SHARED)
+    add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    target_link_libraries(${PROJECT_NAME}
+        ${LIBVORBIS_LIBRARIES}
+        ${LIBVORBISFILE_LIBRARIES}
+        ${LIBOGG_LIBRARIES}
+        ${M_LIBRARY}
+    )
+    list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME})
+    set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+    set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+endif()
+
+if((NOT FLUIDLITE_BUILD_SHARED) AND (NOT FLUIDLITE_BUILD_STATIC))
+    message(FATAL_ERROR "Neither dynamic nor static library build is selected.")
 endif()
 
 if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})

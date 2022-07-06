@@ -4,7 +4,9 @@ libdir=@fluidlite_libdir@
 includedir=@fluidlite_includedir@
 
 Name: fluidlite
-Description: Software SoundFont synth
+Description: Software SoundFont Synthesizer
+URL: https://github.com/divideconcept/FluidLite
 Version: @fluidlite_VERSION@
-Libs: -L${libdir} -lfluidlite @ADDITIONAL_LIBS@
+Libs: -L${libdir} -lfluidlite
+Libs.private: @ADDITIONAL_LIBS@
 Cflags: -I${includedir}
