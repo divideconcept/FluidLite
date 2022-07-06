@@ -172,17 +172,31 @@ if (ENABLE_SF3 AND STB_VORBIS)
     target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
+# Static library target
+
 option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
 if(FLUIDLITE_BUILD_STATIC)
     add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    target_link_libraries(${PROJECT_NAME}-static PUBLIC
+        ${LIBVORBIS_LIBRARIES}
+        ${LIBVORBISFILE_LIBRARIES}
+        ${LIBOGG_LIBRARIES}
+        ${M_LIBRARY}
+    )
     set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
     list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME}-static)
+    target_include_directories(${PROJECT_NAME}-static PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    )
 endif()
+
+# Shared dynamic library target
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
     add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-    target_link_libraries(${PROJECT_NAME}
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}
         ${LIBOGG_LIBRARIES}
@@ -191,6 +205,10 @@ if(FLUIDLITE_BUILD_SHARED)
     list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME})
     set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
     set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    )
 endif()
 
 if((NOT FLUIDLITE_BUILD_SHARED) AND (NOT FLUIDLITE_BUILD_STATIC))
@@ -210,9 +228,42 @@ endif()
 configure_file(fluidlite.pc.in ${PROJECT_BINARY_DIR}/fluidlite.pc @ONLY)
 
 install(TARGETS ${FLUIDLITE_INSTALL_TARGETS}
+    EXPORT ${PROJECT_NAME}-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${SCOPED_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluidlite)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fluidlite.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Exported targets
+
+install(EXPORT ${PROJECT_NAME}-targets
+	FILE ${PROJECT_NAME}-targets.cmake
+	NAMESPACE ${PROJECT_NAME}::
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+export(EXPORT ${PROJECT_NAME}-targets
+	FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
+	NAMESPACE ${PROJECT_NAME}::
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	${PROJECT_NAME}-config-version.cmake
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion
+)
+configure_package_config_file(
+	${PROJECT_NAME}-config.cmake.in
+	${PROJECT_NAME}-config.cmake
+	INSTALL_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
