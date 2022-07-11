@@ -72,7 +72,7 @@ list(APPEND SOURCES
 # Dependencies:
 
 set(ADDITIONAL_LIBS "")
-# find the math lib, except in Windows
+# find the math lib, except in macOS/Windows
 set(M_LIBRARY "")
 if (UNIX AND NOT APPLE)
     find_library(M_LIBRARY m)
