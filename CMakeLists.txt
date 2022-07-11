@@ -71,14 +71,15 @@ list(APPEND SOURCES
 
 # Dependencies:
 
-# find the math lib
-find_library(M_LIBRARY m)
-message(STATUS "Math library: ${M_LIBRARY}")
-if(M_LIBRARY)
-    set(ADDITIONAL_LIBS "-lm")
-else()
-    set(M_LIBRARY "")
-    set(ADDITIONAL_LIBS "")
+set(ADDITIONAL_LIBS "")
+# find the math lib, except in Windows
+set(M_LIBRARY "")
+if (UNIX AND NOT APPLE)
+    find_library(M_LIBRARY m)
+    message(STATUS "Math library: ${M_LIBRARY}")
+    if(M_LIBRARY)
+        set(ADDITIONAL_LIBS "-lm")
+    endif()
 endif()
 
 if (ENABLE_SF3 AND NOT STB_VORBIS)
