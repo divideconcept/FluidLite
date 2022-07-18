@@ -19,8 +19,8 @@
  */
 
 
-#ifndef _FLUIDSYNTH_PRIV_H
-#define _FLUIDSYNTH_PRIV_H
+#ifndef _FLUIDLITE_PRIV_H
+#define _FLUIDLITE_PRIV_H
 
 #include "fluid_config.h"
 
@@ -225,4 +225,4 @@ char* fluid_error(void);
 #define _(s) s
 
 
-#endif /* _FLUIDSYNTH_PRIV_H */
+#endif /* _FLUIDLITE_PRIV_H */

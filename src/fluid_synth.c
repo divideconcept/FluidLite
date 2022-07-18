@@ -135,9 +135,9 @@ void fluid_synth_settings(fluid_settings_t* settings)
  */
 void fluid_version(int *major, int *minor, int *micro)
 {
-  *major = FLUIDSYNTH_VERSION_MAJOR;
-  *minor = FLUIDSYNTH_VERSION_MINOR;
-  *micro = FLUIDSYNTH_VERSION_MICRO;
+  *major = FLUIDLITE_VERSION_MAJOR;
+  *minor = FLUIDLITE_VERSION_MINOR;
+  *micro = FLUIDLITE_VERSION_MICRO;
 }
 
 /*
@@ -145,7 +145,7 @@ void fluid_version(int *major, int *minor, int *micro)
  */
 char* fluid_version_str(void)
 {
-  return FLUIDSYNTH_VERSION;
+  return FLUIDLITE_VERSION;
 }
 
 
