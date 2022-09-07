@@ -731,7 +731,7 @@ delete_fluid_synth(fluid_synth_t* synth)
 /*
  * fluid_synth_error
  *
- * The error messages are not thread-save, yet. They are still stored
+ * The error messages are not thread-safe, yet. They are still stored
  * in a global message buffer (see fluid_sys.c).
  * */
 char*
