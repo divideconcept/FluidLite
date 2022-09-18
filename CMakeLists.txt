@@ -156,7 +156,6 @@ configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY
 
 add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
 set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME}-obj PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
@@ -196,6 +195,7 @@ endif()
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
+    set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
     add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         ${LIBVORBIS_LIBRARIES}
