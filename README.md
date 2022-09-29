@@ -163,3 +163,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${MATH_LIB}
 )
 ~~~
+
+Warning! this repository contains symlinks. If you are a Windows user and this is new for you, please [learn about this feature in Windows](https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/) and [git for windows](/orgs/community/discussions/23591).
