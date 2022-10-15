@@ -731,7 +731,7 @@ delete_fluid_synth(fluid_synth_t* synth)
 /*
  * fluid_synth_error
  *
- * The error messages are not thread-save, yet. They are still stored
+ * The error messages are not thread-safe, yet. They are still stored
  * in a global message buffer (see fluid_sys.c).
  * */
 char*
@@ -2527,7 +2527,7 @@ void fluid_synth_kill_by_exclusive_class(fluid_synth_t* synth, fluid_voice_t* ne
 
     fluid_voice_kill_excl(existing_voice);
   };
-};
+}
 
 /*
  * fluid_synth_start_voice
@@ -2951,7 +2951,7 @@ int fluid_synth_set_interp_method(fluid_synth_t* synth, int chan, int interp_met
     };
   };
   return FLUID_OK;
-};
+}
 
 /* Purpose:
  * Returns the number of allocated midi channels

@@ -237,7 +237,7 @@ void fluid_chorus_set_nr(fluid_chorus_t* chorus, int nr)
 int fluid_chorus_get_nr(fluid_chorus_t* chorus)
 {
     return chorus->number_blocks;
-};
+}
 
 /* Purpose:
  * Sets the mixing level of the signal from each delay line (linear).
@@ -253,7 +253,7 @@ void fluid_chorus_set_level(fluid_chorus_t* chorus, fluid_real_t level)
 fluid_real_t fluid_chorus_get_level(fluid_chorus_t* chorus)
 {
     return chorus->level;
-};
+}
 
 /* Purpose:
  * Sets the modulation frequency.
@@ -270,7 +270,7 @@ void fluid_chorus_set_speed_Hz(fluid_chorus_t* chorus, fluid_real_t speed_Hz)
 fluid_real_t fluid_chorus_get_speed_Hz(fluid_chorus_t* chorus)
 {
     return chorus->speed_Hz;
-};
+}
 
 /* Purpose:
  * Sets the modulation depth in ms.
@@ -287,7 +287,7 @@ void fluid_chorus_set_depth_ms(fluid_chorus_t* chorus, fluid_real_t depth_ms)
 fluid_real_t fluid_chorus_get_depth_ms(fluid_chorus_t* chorus)
 {
     return chorus->depth_ms;
-};
+}
 
 /* Purpose:
  * Sets the type of the modulation waveform.
@@ -304,7 +304,7 @@ void fluid_chorus_set_type(fluid_chorus_t* chorus, int type)
 int fluid_chorus_get_type(fluid_chorus_t* chorus)
 {
     return chorus->type;
-};
+}
 
 void
 delete_fluid_chorus(fluid_chorus_t* chorus)
