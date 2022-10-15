@@ -10,6 +10,7 @@ include(GNUInstallDirs)
 option(ENABLE_SF3 "Enable SF3 files (ogg/vorbis compressed samples)" FALSE)
 option(STB_VORBIS "Use STB VORBIS library instead of ogg/vorbis" FALSE)
 option(WITH_FLOAT "Use 32 bit float type samples (instead of 64 bit double type)" TRUE)
+option(CMAKE_POSITION_INDEPENDENT_CODE "Use PIC for building all sources" TRUE)
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWERCASE_BUILD_TYPE)
 if("${LOWERCASE_BUILD_TYPE}" STREQUAL "debug")
@@ -195,7 +196,6 @@ endif()
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
-    set_target_properties(${PROJECT_NAME}-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
     add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         ${LIBVORBIS_LIBRARIES}
