@@ -178,6 +178,7 @@ endif()
 option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
 if(FLUIDLITE_BUILD_STATIC)
     add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    target_compile_definitions(${PROJECT_NAME}-static PUBLIC FLUIDLITE_STATIC)
     target_link_libraries(${PROJECT_NAME}-static PUBLIC
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}
@@ -197,6 +198,7 @@ endif()
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
     add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLUIDLITE_DLL_EXPORTS)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}

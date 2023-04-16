@@ -27,27 +27,28 @@
 extern "C" {
 #endif
 
-/*
-#if defined(WIN32)
-#if defined(FLUIDSYNTH_DLL_EXPORTS)
-#define FLUIDSYNTH_API __declspec(dllexport)
-#elif defined(FLUIDSYNTH_NOT_A_DLL)
+#if defined(_WIN32)
+#if defined(FLUIDLITE_STATIC)
 #define FLUIDSYNTH_API
+#elif defined(FLUIDLITE_DLL_EXPORTS)
+#define FLUIDSYNTH_API __declspec(dllexport)
 #else
 #define FLUIDSYNTH_API __declspec(dllimport)
 #endif
-
-#elif defined(MACOS9)
-#define FLUIDSYNTH_API __declspec(export)
-
+#elif (defined(__GNUC__) || defined(__clang__))
+#if defined(FLUIDLITE_STATIC)
+#define FLUIDSYNTH_API
+#else
+#define FLUIDSYNTH_API __attribute__((visibility("default")))
+#endif
+#elif defined(__OS2__) && defined(__WATCOMC__)
+#if defined(FLUIDLITE_STATIC)
+#define FLUIDSYNTH_API
+#elif defined(FLUIDLITE_DLL_EXPORTS)
+#define FLUIDSYNTH_API __declspec(dllexport)
 #else
 #define FLUIDSYNTH_API
 #endif
-*/
-#if defined(__WATCOMC__) && defined(FLUIDSYNTH_DLL_EXPORTS)
-#define FLUIDSYNTH_API __declspec(dllexport) /* watcom needs the dllexport */
-#else
-#define FLUIDSYNTH_API
 #endif
 
 /**
