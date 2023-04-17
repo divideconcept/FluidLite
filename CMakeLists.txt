@@ -8,7 +8,7 @@ project(fluidlite
 include(GNUInstallDirs)
 
 option(ENABLE_SF3 "Enable SF3 files (ogg/vorbis compressed samples)" FALSE)
-option(STB_VORBIS "Use STB VORBIS library instead of ogg/vorbis" FALSE)
+option(STB_VORBIS "Use stb_vorbis library instead of libogg/libvorbis" FALSE)
 option(WITH_FLOAT "Use 32 bit float type samples (instead of 64 bit double type)" TRUE)
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use PIC for building all sources" TRUE)
 
@@ -70,77 +70,6 @@ list(APPEND SOURCES
     src/fluid_voice.c
 )
 
-# Dependencies:
-
-set(ADDITIONAL_LIBS "")
-# find the math lib, except in macOS/Windows
-set(M_LIBRARY "")
-if (UNIX AND NOT APPLE)
-    find_library(M_LIBRARY m)
-    message(STATUS "Math library: ${M_LIBRARY}")
-    if(M_LIBRARY)
-        set(ADDITIONAL_LIBS "-lm")
-    endif()
-endif()
-
-if (ENABLE_SF3 AND NOT STB_VORBIS)
-    find_package(PkgConfig QUIET)
-    pkg_check_modules(LIBVORBIS vorbis>=1.3.5)
-    pkg_check_modules(LIBVORBISFILE vorbisfile>=1.3.5)
-    if (NOT LIBVORBIS_FOUND OR NOT LIBVORBISFILE_FOUND)
-        list(APPEND SOURCES
-            libvorbis-1.3.5/lib/vorbisenc.c
-            libvorbis-1.3.5/lib/info.c
-            libvorbis-1.3.5/lib/analysis.c
-            libvorbis-1.3.5/lib/bitrate.c
-            libvorbis-1.3.5/lib/block.c
-            libvorbis-1.3.5/lib/codebook.c
-            libvorbis-1.3.5/lib/envelope.c
-            libvorbis-1.3.5/lib/floor0.c
-            libvorbis-1.3.5/lib/floor1.c
-            libvorbis-1.3.5/lib/lookup.c
-            libvorbis-1.3.5/lib/lpc.c
-            libvorbis-1.3.5/lib/lsp.c
-            libvorbis-1.3.5/lib/mapping0.c
-            libvorbis-1.3.5/lib/mdct.c
-            libvorbis-1.3.5/lib/psy.c
-            libvorbis-1.3.5/lib/registry.c
-            libvorbis-1.3.5/lib/res0.c
-            libvorbis-1.3.5/lib/sharedbook.c
-            libvorbis-1.3.5/lib/smallft.c
-            libvorbis-1.3.5/lib/vorbisfile.c
-            libvorbis-1.3.5/lib/window.c
-            libvorbis-1.3.5/lib/synthesis.c
-        )
-        list(APPEND LIBVORBIS_INCLUDE_DIRS
-            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/include
-            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/lib
-        )
-        message(WARNING "Using libvorbis shipped sources.")
-    else()
-        message(STATUS "Using pkg-config provided libvorbis")
-        set(ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBVORBIS_LDFLAGS} ${LIBVORBISFILE_LDFLAGS}")
-    endif()
-
-    pkg_check_modules(LIBOGG ogg>=1.3.2)
-    if (NOT LIBOGG_FOUND)
-        list(APPEND SOURCES
-            libogg-1.3.2/src/bitwise.c
-            libogg-1.3.2/src/framing.c
-        )
-        set(LIBOGG_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/libogg-1.3.2/include)
-
-        message(WARNING "Using libogg shipped sources.")
-    else()
-        message(STATUS "Using pkg-config provided libogg")
-        set(ADDITIONAL_LIBS "${ADDITIONAL_LIBS} ${LIBOGG_LDFLAGS}")
-    endif()
-endif()
-
-if (ENABLE_SF3 AND STB_VORBIS)
-    list(APPEND SOURCES stb/stb_vorbis.c)
-endif()
-
 if (ENABLE_SF3)
     if (STB_VORBIS)
         set(SF3_SUPPORT "SF3_STB_VORBIS")
@@ -164,11 +93,66 @@ target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_BINARY_DI
 target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/src)
 target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
-if (ENABLE_SF3 AND NOT STB_VORBIS)
-    target_include_directories(${PROJECT_NAME}-options INTERFACE ${LIBOGG_INCLUDE_DIRS})
-    target_include_directories(${PROJECT_NAME}-options INTERFACE ${LIBVORBIS_INCLUDE_DIRS})
+# Dependencies:
+
+set(ADDITIONAL_LIBS)
+
+# find the math lib, except in macOS/Windows
+if (UNIX AND NOT APPLE)
+    find_library(M_LIBRARY m)
+    message(STATUS "Math library: ${M_LIBRARY}")
+    if(M_LIBRARY)
+        list(APPEND ADDITIONAL_LIBS ${M_LIBRARY})
+    endif()
 endif()
+
+if (ENABLE_SF3 AND NOT STB_VORBIS)
+    find_package(Vorbis QUIET)
+    if (NOT TARGET Vorbis::vorbisfile)
+        message(WARNING "Using vendored libogg/libvorbis")
+
+        list(APPEND SOURCES
+            libogg-1.3.2/src/bitwise.c
+            libogg-1.3.2/src/framing.c
+            libvorbis-1.3.5/lib/vorbisenc.c
+            libvorbis-1.3.5/lib/info.c
+            libvorbis-1.3.5/lib/analysis.c
+            libvorbis-1.3.5/lib/bitrate.c
+            libvorbis-1.3.5/lib/block.c
+            libvorbis-1.3.5/lib/codebook.c
+            libvorbis-1.3.5/lib/envelope.c
+            libvorbis-1.3.5/lib/floor0.c
+            libvorbis-1.3.5/lib/floor1.c
+            libvorbis-1.3.5/lib/lookup.c
+            libvorbis-1.3.5/lib/lpc.c
+            libvorbis-1.3.5/lib/lsp.c
+            libvorbis-1.3.5/lib/mapping0.c
+            libvorbis-1.3.5/lib/mdct.c
+            libvorbis-1.3.5/lib/psy.c
+            libvorbis-1.3.5/lib/registry.c
+            libvorbis-1.3.5/lib/res0.c
+            libvorbis-1.3.5/lib/sharedbook.c
+            libvorbis-1.3.5/lib/smallft.c
+            libvorbis-1.3.5/lib/vorbisfile.c
+            libvorbis-1.3.5/lib/window.c
+            libvorbis-1.3.5/lib/synthesis.c
+        )
+        target_include_directories(${PROJECT_NAME}-options INTERFACE
+            ${PROJECT_SOURCE_DIR}/libogg-1.3.2/include
+            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/include
+            ${PROJECT_SOURCE_DIR}/libvorbis-1.3.5/lib
+        )
+    else()
+        message(STATUS "Using system libvorbis")
+        
+        list(APPEND ADDITIONAL_LIBS Vorbis::vorbisfile)
+    endif()
+endif()
+
 if (ENABLE_SF3 AND STB_VORBIS)
+    message(STATUS "Using vendored stb_vorbis")
+
+    list(APPEND SOURCES stb/stb_vorbis.c)
     target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
@@ -189,14 +173,12 @@ if(FLUIDLITE_BUILD_STATIC)
     set_target_properties(${PROJECT_NAME}-static PROPERTIES C_STANDARD 99)
     target_compile_definitions(${PROJECT_NAME}-static PUBLIC FLUIDLITE_STATIC)
     target_link_libraries(${PROJECT_NAME}-static PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}-options>)
-    target_link_libraries(${PROJECT_NAME}-static PUBLIC
-        ${LIBVORBIS_LIBRARIES}
-        ${LIBVORBISFILE_LIBRARIES}
-        ${LIBOGG_LIBRARIES}
-        ${M_LIBRARY}
-    )
-    set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-    list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME}-static)
+    target_link_libraries(${PROJECT_NAME}-static PUBLIC ${ADDITIONAL_LIBS})
+    if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+        set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME}-static)
+    else()
+        set_target_properties(${PROJECT_NAME}-static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+    endif()
     target_include_directories(${PROJECT_NAME}-static PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${PROJECT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -211,13 +193,7 @@ if(FLUIDLITE_BUILD_SHARED)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FLUIDLITE_DLL_EXPORTS)
     target_link_libraries(${PROJECT_NAME} PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}-options>)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${LIBVORBIS_LIBRARIES}
-        ${LIBVORBISFILE_LIBRARIES}
-        ${LIBOGG_LIBRARIES}
-        ${M_LIBRARY}
-    )
-    list(APPEND FLUIDLITE_INSTALL_TARGETS ${PROJECT_NAME})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${ADDITIONAL_LIBS})
     set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
     set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     target_include_directories(${PROJECT_NAME} PUBLIC
@@ -242,23 +218,43 @@ else()
 endif()
 configure_file(fluidlite.pc.in ${PROJECT_BINARY_DIR}/fluidlite.pc @ONLY)
 
-install(TARGETS ${FLUIDLITE_INSTALL_TARGETS}
-    EXPORT ${PROJECT_NAME}-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${SCOPED_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluidlite)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fluidlite.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # Exported targets
 
-install(EXPORT ${PROJECT_NAME}-targets
-	FILE ${PROJECT_NAME}-targets.cmake
-	NAMESPACE ${PROJECT_NAME}::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
+if(FLUIDLITE_BUILD_STATIC)
+    install(TARGETS ${PROJECT_NAME}-static
+        EXPORT ${PROJECT_NAME}-static-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
+    install(EXPORT ${PROJECT_NAME}-static-targets
+        FILE ${PROJECT_NAME}-static-targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+endif()
+
+if(FLUIDLITE_BUILD_SHARED)
+    install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}-shared-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
+    install(EXPORT ${PROJECT_NAME}-shared-targets
+        FILE ${PROJECT_NAME}-shared-targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+endif()
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
