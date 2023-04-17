@@ -153,32 +153,33 @@ endif()
 
 configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
 
-# Common object library for the static and dynamic targets
+# The interface library collects all PRIVATE build options for the static and dynamic targets
 
-add_library(${PROJECT_NAME}-obj OBJECT ${SOURCES})
-set_target_properties(${PROJECT_NAME}-obj PROPERTIES C_STANDARD 99)
+add_library(${PROJECT_NAME}-options INTERFACE)
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME}-obj PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(${PROJECT_NAME}-options INTERFACE _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_BINARY_DIR})
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_BINARY_DIR})
+target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
 if (ENABLE_SF3 AND NOT STB_VORBIS)
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBOGG_INCLUDE_DIRS})
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${LIBVORBIS_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME}-options INTERFACE ${LIBOGG_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME}-options INTERFACE ${LIBVORBIS_INCLUDE_DIRS})
 endif()
 if (ENABLE_SF3 AND STB_VORBIS)
-    target_include_directories(${PROJECT_NAME}-obj PRIVATE ${PROJECT_SOURCE_DIR}/stb)
+    target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
 # Static library target
 
 option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
 if(FLUIDLITE_BUILD_STATIC)
-    add_library(${PROJECT_NAME}-static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    add_library(${PROJECT_NAME}-static STATIC ${SOURCES})
+    set_target_properties(${PROJECT_NAME}-static PROPERTIES C_STANDARD 99)
     target_compile_definitions(${PROJECT_NAME}-static PUBLIC FLUIDLITE_STATIC)
+    target_link_libraries(${PROJECT_NAME}-static PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}-options>)
     target_link_libraries(${PROJECT_NAME}-static PUBLIC
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}
@@ -197,8 +198,10 @@ endif()
 
 option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
 if(FLUIDLITE_BUILD_SHARED)
-    add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
+    add_library(${PROJECT_NAME} SHARED ${SOURCES})
+    set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FLUIDLITE_DLL_EXPORTS)
+    target_link_libraries(${PROJECT_NAME} PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}-options>)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         ${LIBVORBIS_LIBRARIES}
         ${LIBVORBISFILE_LIBRARIES}
@@ -246,11 +249,6 @@ install(EXPORT ${PROJECT_NAME}-targets
 	FILE ${PROJECT_NAME}-targets.cmake
 	NAMESPACE ${PROJECT_NAME}::
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
-
-export(EXPORT ${PROJECT_NAME}-targets
-	FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
-	NAMESPACE ${PROJECT_NAME}::
 )
 
 include(CMakePackageConfigHelpers)
