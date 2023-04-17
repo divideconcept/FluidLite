@@ -96,6 +96,8 @@ target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DI
 # Dependencies:
 
 set(ADDITIONAL_LIBS)
+set(PC_LIBS)
+set(PC_REQUIRES)
 
 # find the math lib, except in macOS/Windows
 if (UNIX AND NOT APPLE)
@@ -103,6 +105,7 @@ if (UNIX AND NOT APPLE)
     message(STATUS "Math library: ${M_LIBRARY}")
     if(M_LIBRARY)
         list(APPEND ADDITIONAL_LIBS ${M_LIBRARY})
+        list(APPEND PC_LIBS -lm)
     endif()
 endif()
 
@@ -146,6 +149,7 @@ if (ENABLE_SF3 AND NOT STB_VORBIS)
         message(STATUS "Using system libvorbis")
         
         list(APPEND ADDITIONAL_LIBS Vorbis::vorbisfile)
+        list(APPEND PC_REQUIRES vorbisfile)
     endif()
 endif()
 
@@ -205,6 +209,9 @@ endif()
 if((NOT FLUIDLITE_BUILD_SHARED) AND (NOT FLUIDLITE_BUILD_STATIC))
     message(FATAL_ERROR "Neither dynamic nor static library build is selected.")
 endif()
+
+string(JOIN " " PC_LIBS ${PC_LIBS})
+string(JOIN " " PC_REQUIRES ${PC_REQUIRES})
 
 if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
     set(fluidlite_libdir "${CMAKE_INSTALL_LIBDIR}")
