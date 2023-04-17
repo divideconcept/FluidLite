@@ -172,9 +172,18 @@ if (ENABLE_SF3 AND STB_VORBIS)
     target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/stb)
 endif()
 
+# When defined, respect CMake's BUILD_SHARED_LIBS setting
+set(FLUIDLITE_STATIC_ENABLED_BY_DEFAULT ON)
+set(FLUIDLITE_SHARED_ENABLED_BY_DEFAULT OFF)
+
+if(BUILD_SHARED_LIBS)
+    set(FLUIDLITE_SHARED_ENABLED_BY_DEFAULT ON)
+    set(FLUIDLITE_STATIC_ENABLED_BY_DEFAULT OFF)
+endif()
+
 # Static library target
 
-option(FLUIDLITE_BUILD_STATIC "Build static library" TRUE)
+option(FLUIDLITE_BUILD_STATIC "Build static library" ${FLUIDLITE_STATIC_ENABLED_BY_DEFAULT})
 if(FLUIDLITE_BUILD_STATIC)
     add_library(${PROJECT_NAME}-static STATIC ${SOURCES})
     set_target_properties(${PROJECT_NAME}-static PROPERTIES C_STANDARD 99)
@@ -196,7 +205,7 @@ endif()
 
 # Shared dynamic library target
 
-option(FLUIDLITE_BUILD_SHARED "Build shared library" TRUE)
+option(FLUIDLITE_BUILD_SHARED "Build shared library" ${FLUIDLITE_SHARED_ENABLED_BY_DEFAULT})
 if(FLUIDLITE_BUILD_SHARED)
     add_library(${PROJECT_NAME} SHARED ${SOURCES})
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
