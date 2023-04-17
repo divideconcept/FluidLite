@@ -8,5 +8,6 @@ Description: Software SoundFont Synthesizer
 URL: https://github.com/divideconcept/FluidLite
 Version: @fluidlite_VERSION@
 Libs: -L${libdir} -lfluidlite
-Libs.private: @ADDITIONAL_LIBS@
+Libs.private: @PC_LIBS@
 Cflags: -I${includedir}
+Requires.private: @PC_REQUIRES@
