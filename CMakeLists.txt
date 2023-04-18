@@ -74,12 +74,12 @@ list(APPEND SOURCES
 
 if (ENABLE_SF3)
     if (STB_VORBIS)
-        set(SF3_SUPPORT "SF3_STB_VORBIS")
+        set(FLUIDLITE_SF3_SUPPORT "SF3_STB_VORBIS")
     else()
-        set(SF3_SUPPORT "SF3_XIPH_VORBIS")
+        set(FLUIDLITE_SF3_SUPPORT "SF3_XIPH_VORBIS")
     endif()
 else()
-    set(SF3_SUPPORT "SF3_DISABLED")
+    set(FLUIDLITE_SF3_SUPPORT "SF3_DISABLED")
 endif()
 
 configure_file(src/fluid_config.cmake ${PROJECT_BINARY_DIR}/fluid_config.h @ONLY)
@@ -111,10 +111,13 @@ if (UNIX AND NOT APPLE)
     endif()
 endif()
 
+set(FLUIDLITE_VENDORED FALSE)
 if (ENABLE_SF3 AND NOT STB_VORBIS)
     find_package(Vorbis QUIET)
     if (NOT TARGET Vorbis::vorbisfile)
         message(WARNING "Using vendored libogg/libvorbis")
+
+        set(FLUIDLITE_VENDORED TRUE)
 
         list(APPEND SOURCES
             libogg-1.3.2/src/bitwise.c
@@ -157,6 +160,8 @@ endif()
 
 if (ENABLE_SF3 AND STB_VORBIS)
     message(STATUS "Using vendored stb_vorbis")
+
+    set(FLUIDLITE_VENDORED TRUE)
 
     list(APPEND SOURCES stb/stb_vorbis.c)
     target_include_directories(${PROJECT_NAME}-options INTERFACE ${PROJECT_SOURCE_DIR}/stb)
@@ -230,6 +235,15 @@ configure_file(fluidlite.pc.in ${PROJECT_BINARY_DIR}/fluidlite.pc @ONLY)
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${SCOPED_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluidlite)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fluidlite.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+if(FLUIDLITE_BUILD_STATIC AND NOT FLUIDLITE_VENDORED)
+    install(
+        FILES
+            cmake/FindOgg.cmake
+            cmake/FindVorbis.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+endif()
 
 # Exported targets
 
