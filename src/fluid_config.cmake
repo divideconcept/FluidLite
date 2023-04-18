@@ -14,7 +14,7 @@
 #define SF3_DISABLED 0
 #define SF3_XIPH_VORBIS 1
 #define SF3_STB_VORBIS 2
-#define SF3_SUPPORT @SF3_SUPPORT@
+#define SF3_SUPPORT @FLUIDLITE_SF3_SUPPORT@
 
 /* if defined, the synth uses float (32 bit) samples, otherwise it uses double (64 bit) samples */
 #cmakedefine WITH_FLOAT

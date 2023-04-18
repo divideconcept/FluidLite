@@ -1,6 +1,12 @@
 @PACKAGE_INIT@
 
-set(SF3_SUPPORT @SF3_SUPPORT@)
+set(FLUIDLITE_SF3_SUPPORT  @FLUIDLITE_SF3_SUPPORT@)
+set(FLUIDLITE_VENDORED     @FLUIDLITE_VENDORED@)
+
+if(NOT FLUIDLITE_VENDORED)
+    set(_fluidlite_cmake_module_path "${CMAKE_MODULE_PATH}")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+endif()
 
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-shared-targets.cmake")
    include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-shared-targets.cmake")
@@ -8,9 +14,14 @@ endif()
 
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-static-targets.cmake")
    include(CMakeFindDependencyMacro)
-   if("${SF3_SUPPORT}" STREQUAL "SF3_XIPH_VORBIS" AND NOT TARGET Vorbis::vorbisfile)
-      find_dependency(Vorbis REQUIRED)
+   if("${FLUIDLITE_SF3_SUPPORT}" STREQUAL "SF3_XIPH_VORBIS" AND NOT FLUIDLITE_VENDORED AND NOT TARGET Vorbis::vorbisfile)
+      find_dependency(Vorbis)
    endif()
 
    include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-static-targets.cmake")
+endif()
+
+if(NOT FLUIDLITE_VENDORED)
+    set(CMAKE_MODULE_PATH "${_fluidlite_cmake_module_path}")
+    unset(_fluidlite_cmake_module_path)
 endif()
