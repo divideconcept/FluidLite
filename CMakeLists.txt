@@ -7,6 +7,8 @@ project(fluidlite
 
 include(GNUInstallDirs)
 
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 option(ENABLE_SF3 "Enable SF3 files (ogg/vorbis compressed samples)" FALSE)
 option(STB_VORBIS "Use stb_vorbis library instead of libogg/libvorbis" FALSE)
 option(WITH_FLOAT "Use 32 bit float type samples (instead of 64 bit double type)" TRUE)
