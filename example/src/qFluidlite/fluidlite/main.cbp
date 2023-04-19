@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="FluidLite" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<MakeCommands>
+			<Build command="" />
+			<CompileFile command="" />
+			<Clean command="" />
+			<DistClean command="" />
+			<AskRebuildNeeded command="" />
+			<SilentBuild command=" &gt; $(CMD_NULL)" />
+		</MakeCommands>
+		<Build>
+			<Target title="linux">
+				<Option output="FluidLite" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="1" />
+				<Compiler>
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add library="m" />
+					<Add library="asound" />
+					<Add directory="./" />
+				</Linker>
+			</Target>
+			<Target title="linuxsf3">
+				<Option output="FluidLite" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="1" />
+				<Compiler>
+					<Add option="-DENABLE_SF3=YES" />
+					<Add option="-DSF3" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add library="m" />
+					<Add directory="./" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="alsademo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_chan.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_chan.h" />
+		<Unit filename="fluid_chorus.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_chorus.h" />
+		<Unit filename="fluid_config.h" />
+		<Unit filename="fluid_conv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_conv.h" />
+		<Unit filename="fluid_defsfont.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_defsfont.h" />
+		<Unit filename="fluid_dsp_float.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_gen.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_gen.h" />
+		<Unit filename="fluid_hash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_hash.h" />
+		<Unit filename="fluid_init.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_list.h" />
+		<Unit filename="fluid_midi.h" />
+		<Unit filename="fluid_mod.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_mod.h" />
+		<Unit filename="fluid_phase.h" />
+		<Unit filename="fluid_ramsfont.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_ramsfont.h" />
+		<Unit filename="fluid_rev.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_rev.h" />
+		<Unit filename="fluid_settings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_settings.h" />
+		<Unit filename="fluid_sfont.h" />
+		<Unit filename="fluid_synth.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_synth.h" />
+		<Unit filename="fluid_sys.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_sys.h" />
+		<Unit filename="fluid_tuning.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_tuning.h" />
+		<Unit filename="fluid_voice.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fluid_voice.h" />
+		<Unit filename="fluidsynth_priv.h" />
+		<Unit filename="include/fluidlite.h" />
+		<Unit filename="include/fluidsynth/gen.h" />
+		<Unit filename="include/fluidsynth/log.h" />
+		<Unit filename="include/fluidsynth/misc.h" />
+		<Unit filename="include/fluidsynth/mod.h" />
+		<Unit filename="include/fluidsynth/ramsfont.h" />
+		<Unit filename="include/fluidsynth/settings.h" />
+		<Unit filename="include/fluidsynth/sfont.h" />
+		<Unit filename="include/fluidsynth/synth.h" />
+		<Unit filename="include/fluidsynth/types.h" />
+		<Unit filename="include/fluidsynth/version.h" />
+		<Unit filename="include/fluidsynth/voice.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>
