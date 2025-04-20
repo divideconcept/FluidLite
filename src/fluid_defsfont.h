@@ -342,11 +342,6 @@ SFData *sfload_file (const char * fname, fluid_fileapi_t * fileapi);
 #define GPOINTER_TO_INT(p)	((uintptr)   (p))
 #define GINT_TO_POINTER(i)      ((void *)  (uintptr)(i))
 
-char*	 g_strdup		(const char *str);
-
-
-
-
 
 /* Provide simple macro statement wrappers (adapted from Perl):
  *  G_STMT_START { statements; } G_STMT_END;

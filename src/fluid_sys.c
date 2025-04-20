@@ -256,6 +256,18 @@ char *fluid_strtok (char **str, char *delim)
 }
 
 /*
+ * fluid_strdup
+ */
+char*
+fluid_strdup(const char *s)
+{
+  size_t len = FLUID_STRLEN(s) + 1;
+  void* ptr = FLUID_MALLOC(len);
+  if (ptr) FLUID_MEMCPY(ptr, s, len);
+  return (char*) ptr;
+}
+
+/*
  * fluid_error
  */
 char*
