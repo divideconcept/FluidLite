@@ -1,6 +1,7 @@
 # Makefile for OS/2 using Open Watcom
+# Relies on a hand-edited config for open-watcom based on fluid_config.cmake
 
-INCLUDES = -I"../include" -I. -I"../stb"
+INCLUDES = -Iwatcom -I"../include" -I"../stb"
 CPPFLAGS = -DHAVE_CONFIG_H=1 -DHAVE_ALLOCA_H=1 -DNDEBUG
 CPPFLAGS+= -DSF3_SUPPORT=SF3_STB_VORBIS
 
@@ -16,8 +17,9 @@ LIBSTATIC=fluidlite_static.lib
 
 !ifeq target static
 BLD_TARGET=$(LIBSTATIC)
+CPPFLAGS+= -DFLUIDLITE_STATIC
 !else
-CPPFLAGS+= -DFLUIDSYNTH_DLL_EXPORTS
+CPPFLAGS+= -DFLUIDLITE_DLL_EXPORTS
 CFLAGS+= $(DLLFLAGS)
 BLD_TARGET=$(DLLNAME)
 !endif
