@@ -193,7 +193,7 @@ typedef FILE*  fluid_file;
 #define FLUID_STRNCMP(_s,_t,_n)      strncmp(_s,_t,_n)
 #define FLUID_STRCPY(_dst,_src)      strcpy(_dst,_src)
 #define FLUID_STRCHR(_s,_c)          strchr(_s,_c)
-#define FLUID_STRDUP(s)              FLUID_STRCPY((char*)FLUID_MALLOC(FLUID_STRLEN(s) + 1), s)
+#define FLUID_STRDUP(_s)             fluid_strdup(_s)
 #define FLUID_SPRINTF                sprintf
 #define FLUID_FPRINTF                fprintf
 
@@ -219,6 +219,7 @@ typedef FILE*  fluid_file;
 #define FLUID_ASSERT_P(a,b)
 
 char* fluid_error(void);
+char* fluid_strdup(const char*);
 
 
 /* Internationalization */
