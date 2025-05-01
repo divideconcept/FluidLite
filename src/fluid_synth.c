@@ -1571,30 +1571,33 @@ fluid_synth_program_change(fluid_synth_t* synth, int chan, int prognum)
     subst_bank = banknum;
     subst_prog = prognum;
 
-    /* Melodic instrument? */
-    if (banknum != DRUM_INST_BANK)
+    /* Percussion: Fallback to preset 0 in percussion bank */
+    if (channel->channum == 9)
     {
-      subst_bank = 0;
-
-      /* Fallback first to bank 0:prognum */
-      preset = fluid_synth_find_preset(synth, 0, prognum);
-
-      /* Fallback to first preset in bank 0 */
-      if (!preset && prognum != 0)
-      {
-	preset = fluid_synth_find_preset(synth, 0, 0);
-	subst_prog = 0;
-      }
-    }
-    else /* Percussion: Fallback to preset 0 in percussion bank */
-    {
-      preset = fluid_synth_find_preset(synth, DRUM_INST_BANK, 0);
+      subst_bank = DRUM_INST_BANK;
       subst_prog = 0;
+      preset = fluid_synth_find_preset(synth, subst_bank, subst_prog);
+    }
+    /* Melodic instrument */
+    else {
+      /* Fallback first to bank 0:prognum */
+      subst_bank = 0;
+      preset = fluid_synth_find_preset(synth, subst_bank, subst_prog);
+
+      /* Fallback to first preset in bank 0 (usually piano...) */
+      if (!preset)
+      {
+        subst_prog = 0;
+        preset = fluid_synth_find_preset(synth, subst_bank, subst_prog);
+      }
     }
 
     if (preset)
       FLUID_LOG(FLUID_WARN, "Instrument not found on channel %d [bank=%d prog=%d], substituted [bank=%d prog=%d]",
-		chan, banknum, prognum, subst_bank, subst_prog);
+                chan, banknum, prognum, subst_bank, subst_prog);
+    else
+      FLUID_LOG(FLUID_WARN, "No preset found on channel %d [bank=%d prog=%d]",
+                chan, banknum, prognum);
   }
 
   sfont_id = preset? fluid_sfont_get_id(preset->sfont) : 0;
