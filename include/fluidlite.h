@@ -27,29 +27,30 @@
 extern "C" {
 #endif
 
-#if defined(_WIN32)
 #if defined(FLUIDLITE_STATIC)
 #define FLUIDSYNTH_API
-#elif defined(FLUIDLITE_DLL_EXPORTS)
+
+#elif defined(_WIN32)
+#if defined(FLUIDLITE_DLL_EXPORTS)
 #define FLUIDSYNTH_API __declspec(dllexport)
 #else
 #define FLUIDSYNTH_API __declspec(dllimport)
 #endif
-#elif (defined(__GNUC__) || defined(__clang__))
-#if defined(FLUIDLITE_STATIC)
-#define FLUIDSYNTH_API
-#else
-#define FLUIDSYNTH_API __attribute__((visibility("default")))
-#endif
+
 #elif defined(__OS2__) && defined(__WATCOMC__)
-#if defined(FLUIDLITE_STATIC)
-#define FLUIDSYNTH_API
-#elif defined(FLUIDLITE_DLL_EXPORTS)
+#if defined(FLUIDLITE_DLL_EXPORTS)
 #define FLUIDSYNTH_API __declspec(dllexport)
 #else
 #define FLUIDSYNTH_API
 #endif
-#endif
+
+#elif (defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
+#define FLUIDSYNTH_API __attribute__((visibility("default")))
+
+#else
+#define FLUIDSYNTH_API
+
+#endif /* FLUIDSYNTH_API */
 
 /**
  * @file fluidlite.h

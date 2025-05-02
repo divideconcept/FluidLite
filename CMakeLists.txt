@@ -209,6 +209,9 @@ if(FLUIDLITE_BUILD_SHARED)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${ADDITIONAL_LIBS})
     set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
     set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    if(NOT WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES C_VISIBILITY_PRESET "hidden")
+    endif()
     target_include_directories(${PROJECT_NAME} PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${PROJECT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
