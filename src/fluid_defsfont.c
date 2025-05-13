@@ -41,9 +41,10 @@ static struct VorbisData vorbisData;
 
 static size_t ovRead(void* ptr, size_t size, size_t nmemb, void* datasource);
 static int ovSeek(void* datasource, ogg_int64_t offset, int whence);
+static int ovClose(void* datasource);
 static long ovTell(void* datasource);
 
-static ov_callbacks ovCallbacks = { ovRead, ovSeek, 0, ovTell };
+static ov_callbacks ovCallbacks = { ovRead, ovSeek, ovClose, ovTell };
 
 //---------------------------------------------------------
 //   ovRead
@@ -82,6 +83,16 @@ static int ovSeek(void* datasource, ogg_int64_t offset, int whence)
         vd->pos = vd->datasize - offset;
         break;
     }
+    return 0;
+}
+
+//---------------------------------------------------------
+//   ovClose
+//---------------------------------------------------------
+
+static int ovClose(void *datasource)
+{
+    (void)datasource;
     return 0;
 }
 
