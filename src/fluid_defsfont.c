@@ -28,8 +28,7 @@
 #include "fluid_sys.h"
 
 #if SF3_SUPPORT == SF3_XIPH_VORBIS
-#include "vorbis/codec.h"
-#include "vorbis/vorbisenc.h"
+#define OV_EXCLUDE_STATIC_CALLBACKS
 #include "vorbis/vorbisfile.h"
 
 struct VorbisData {
