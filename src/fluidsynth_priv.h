@@ -217,6 +217,7 @@ typedef FILE*  fluid_file;
 
 #define FLUID_ASSERT(a,b)
 #define FLUID_ASSERT_P(a,b)
+#define FLUID_N_ELEMENTS(struct)  (sizeof (struct) / sizeof (struct[0]))
 
 char* fluid_error(void);
 char* fluid_strdup(const char*);
