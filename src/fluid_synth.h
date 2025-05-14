@@ -125,6 +125,10 @@ struct _fluid_synth_t
 
   fluid_revmodel_t* reverb;
   fluid_chorus_t* chorus;
+
+  /**< Shadow of chorus parameter: chorus number, level, speed, depth, type */
+  double chorus_param[FLUID_CHORUS_PARAM_LAST];
+
   int cur;                           /** the current sample in the audio buffers to be output */
   int dither_index;		/* current index in random dither value buffer: fluid_synth_(write_s16|dither_s16) */
 
