@@ -64,6 +64,7 @@ static int fluid_synth_sysex_midi_tuning (fluid_synth_t *synth, const char *data
                                           int len, char *response,
                                           int *response_len, int avail_response,
                                           int *handled, int dryrun);
+int fluid_synth_set_chorus_full(fluid_synth_t *synth, int set, const double values[]);
 
 /* default modulators
  * SF2.01 page 52 ff:
@@ -111,22 +112,13 @@ void fluid_synth_settings(fluid_settings_t* settings)
   fluid_settings_register_str(settings, "midi.portname", "", 0, NULL, NULL);
   fluid_settings_register_str(settings, "synth.drums-channel.active", "yes", 0, NULL, NULL);
 
-  fluid_settings_register_int(settings, "synth.polyphony",
-			     256, 16, 4096, 0, NULL, NULL);
-  fluid_settings_register_int(settings, "synth.midi-channels",
-			     16, 16, 256, 0, NULL, NULL);
-  fluid_settings_register_num(settings, "synth.gain",
-			     0.2f, 0.0f, 10.0f,
-			     0, NULL, NULL);
-  fluid_settings_register_int(settings, "synth.audio-channels",
-			     1, 1, 256, 0, NULL, NULL);
-  fluid_settings_register_int(settings, "synth.audio-groups",
-			     1, 1, 256, 0, NULL, NULL);
-  fluid_settings_register_int(settings, "synth.effects-channels",
-			     2, 2, 2, 0, NULL, NULL);
-  fluid_settings_register_num(settings, "synth.sample-rate",
-			     44100.0f, 22050.0f, 96000.0f,
-			     0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.polyphony", 256, 16, 4096, 0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.midi-channels", 16, 16, 256, 0, NULL, NULL);
+  fluid_settings_register_num(settings, "synth.gain", 0.2f, 0.0f, 10.0f, 0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.audio-channels", 1, 1, 256, 0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.audio-groups", 1, 1, 256, 0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.effects-channels", 2, 2, 2, 0, NULL, NULL);
+  fluid_settings_register_num(settings, "synth.sample-rate", 44100.0f, 22050.0f, 96000.0f, 0, NULL, NULL);
   fluid_settings_register_int(settings, "synth.min-note-length", 10, 0, 65535, 0, NULL, NULL);
 }
 
@@ -545,10 +537,22 @@ new_fluid_synth(fluid_settings_t *settings)
 			FLUID_REVERB_DEFAULT_LEVEL);
 
   /* allocate the chorus module */
-  synth->chorus = new_fluid_chorus(synth->sample_rate);
+  synth->chorus = new_fluid_chorus((fluid_real_t)synth->sample_rate);
   if (synth->chorus == NULL) {
     FLUID_LOG(FLUID_ERR, "Out of memory");
     goto error_recovery;
+  }
+
+  {
+    double values[FLUID_CHORUS_PARAM_LAST];
+
+    values[FLUID_CHORUS_NR] = (double)FLUID_CHORUS_DEFAULT_N;
+    values[FLUID_CHORUS_LEVEL] = (double)FLUID_CHORUS_DEFAULT_LEVEL;
+    values[FLUID_CHORUS_SPEED] = (double)FLUID_CHORUS_DEFAULT_SPEED;
+    values[FLUID_CHORUS_DEPTH] = (double)FLUID_CHORUS_DEFAULT_DEPTH;
+    values[FLUID_CHORUS_TYPE] = (double)FLUID_CHORUS_DEFAULT_TYPE;
+
+    fluid_synth_set_chorus_full(synth, FLUID_CHORUS_SET_ALL, values);
   }
 
   if(fluid_settings_str_equal(settings, "synth.drums-channel.active", "yes"))
@@ -1885,21 +1889,58 @@ void fluid_synth_set_reverb(fluid_synth_t* synth, double roomsize, double dampin
   fluid_revmodel_setlevel(synth->reverb, level);
 }
 
-/*
- * fluid_synth_set_chorus
+/**
+ * Set chorus parameters.
+ * Keep in mind, that the needed CPU time is proportional to 'nr'.
+ * @param synth FluidSynth instance
+ * @param nr Chorus voice count (0-99, CPU time consumption proportional to
+ *   this value)
+ * @param level Chorus level (0.0-10.0)
+ * @param speed Chorus speed in Hz (0.1-5.0)
+ * @param depth_ms Chorus depth (max value depends on synth sample-rate,
+ *   0.0-21.0 is safe for sample-rate values up to 96KHz)
+ * @param type Chorus waveform type (#fluid_chorus_mod)
+ * @return #FLUID_OK on success, #FLUID_FAILED otherwise
  */
-void fluid_synth_set_chorus(fluid_synth_t* synth, int nr, double level,
-			   double speed, double depth_ms, int type)
+void fluid_synth_set_chorus(fluid_synth_t *synth, int nr, double level,
+                           double speed, double depth_ms, int type)
 {
-/*   fluid_mutex_lock(synth->busy); /\* Don't interfere with the audio thread *\/ */
-/*   fluid_mutex_unlock(synth->busy); */
+  double values[FLUID_CHORUS_PARAM_LAST];
 
-  fluid_chorus_set_nr(synth->chorus, nr);
-  fluid_chorus_set_level(synth->chorus, (fluid_real_t)level);
-  fluid_chorus_set_speed_Hz(synth->chorus, (fluid_real_t)speed);
-  fluid_chorus_set_depth_ms(synth->chorus, (fluid_real_t)depth_ms);
-  fluid_chorus_set_type(synth->chorus, type);
-  fluid_chorus_update(synth->chorus);
+  fluid_return_if_fail(synth != NULL);
+
+  values[FLUID_CHORUS_NR] = nr;
+  values[FLUID_CHORUS_LEVEL] = level;
+  values[FLUID_CHORUS_SPEED] = speed;
+  values[FLUID_CHORUS_DEPTH] = depth_ms;
+  values[FLUID_CHORUS_TYPE] = type;
+  fluid_synth_set_chorus_full(synth, FLUID_CHORUS_SET_ALL, values);
+}
+
+int
+fluid_synth_set_chorus_full(fluid_synth_t *synth, int set, const double values[])
+{
+  int i;
+  /* if non of the flags is set, fail */
+  fluid_return_val_if_fail(set & FLUID_CHORUS_SET_ALL, FLUID_FAILED);
+
+  /* Synth shadow values are set here so that they will be returned if queried */
+  for(i = 0; i < FLUID_CHORUS_PARAM_LAST; i++)
+  {
+    if(set & FLUID_CHORPARAM_TO_SETFLAG(i))
+    {
+      synth->chorus_param[i] = values[i];
+    }
+  }
+
+  fluid_chorus_set(synth->chorus, set,
+                   (int)values[FLUID_CHORUS_NR],
+                   (float)values[FLUID_CHORUS_LEVEL],
+                   (float)values[FLUID_CHORUS_SPEED],
+                   (float)values[FLUID_CHORUS_DEPTH],
+                   (int)values[FLUID_CHORUS_TYPE]);
+
+  return FLUID_OK;
 }
 
 /******************************************************
@@ -2865,27 +2906,27 @@ void fluid_synth_set_chorus_on(fluid_synth_t* synth, int on)
  * Reports the current setting of the chorus unit. */
 int fluid_synth_get_chorus_nr(fluid_synth_t* synth)
 {
-    return fluid_chorus_get_nr(synth->chorus);
+    return (int)synth->chorus_param[FLUID_CHORUS_NR];
 }
 
 double fluid_synth_get_chorus_level(fluid_synth_t* synth)
 {
-    return (double)fluid_chorus_get_level(synth->chorus);
+    return (double)synth->chorus_param[FLUID_CHORUS_LEVEL];
 }
 
 double fluid_synth_get_chorus_speed_Hz(fluid_synth_t* synth)
 {
-    return (double)fluid_chorus_get_speed_Hz(synth->chorus);
+    return (double)synth->chorus_param[FLUID_CHORUS_SPEED];
 }
 
 double fluid_synth_get_chorus_depth_ms(fluid_synth_t* synth)
 {
-    return (double)fluid_chorus_get_depth_ms(synth->chorus);
+    return (double)synth->chorus_param[FLUID_CHORUS_DEPTH];
 }
 
 int fluid_synth_get_chorus_type(fluid_synth_t* synth)
 {
-    return fluid_chorus_get_type(synth->chorus);
+    return (int)synth->chorus_param[FLUID_CHORUS_TYPE];
 }
 
 /* Purpose:
