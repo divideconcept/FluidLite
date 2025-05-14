@@ -391,6 +391,8 @@ FLUIDSYNTH_API int fluid_synth_set_polyphony(fluid_synth_t* synth, int polyphony
   /** Get the polyphony limit (FluidSynth >= 1.0.6) */
 FLUIDSYNTH_API int fluid_synth_get_polyphony(fluid_synth_t* synth);
 
+FLUIDSYNTH_API int fluid_synth_get_active_voice_count(fluid_synth_t* synth);
+
   /** Get the internal buffer size. The internal buffer size if not the
       same thing as the buffer size specified in the
       settings. Internally, the synth *always* uses a specific buffer

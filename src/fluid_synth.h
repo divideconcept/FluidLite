@@ -114,6 +114,7 @@ struct _fluid_synth_t
   int num_channels;                   /** the number of channels */
   int nvoice;                         /** the length of the synthesis process array */
   fluid_voice_t** voice;              /** the synthesis processes */
+  int active_voice_count;             /**< count of active voices */
   unsigned int noteid;                /** the id is incremented for every new note. it's used for noteoff's  */
   unsigned int storeid;
   int nbuf;                           /** How many audio buffers are used? (depends on nr of audio channels / groups)*/

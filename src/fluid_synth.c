@@ -1830,6 +1830,23 @@ int fluid_synth_get_polyphony(fluid_synth_t* synth)
   return synth->polyphony;
 }
 
+/**
+ * Get current number of active voices.
+ * @param synth FluidSynth instance
+ * @return Number of currently active voices.
+ * @since 1.1.0
+ *
+ * Note: To generate accurate continuous statistics of the voice count, caller
+ * should ensure this function is called synchronously with the audio synthesis
+ * process.  This can be done in the new_fluid_audio_driver2() audio callback
+ * function for example.
+ */
+int
+fluid_synth_get_active_voice_count(fluid_synth_t* synth)
+{
+  return synth->active_voice_count;
+}
+
 /*
  * fluid_synth_get_internal_buffer_size
  */
