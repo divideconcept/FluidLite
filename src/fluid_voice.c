@@ -781,6 +781,8 @@ void fluid_voice_start(fluid_voice_t* voice)
   voice->check_sample_sanity_flag=FLUID_SAMPLESANITY_STARTUP;
 
   voice->status = FLUID_VOICE_ON;
+
+  voice->channel->synth->active_voice_count += 1;
 }
 
 static void
@@ -1636,6 +1638,8 @@ fluid_voice_off(fluid_voice_t* voice)
     fluid_sample_decr_ref(voice->sample);
     voice->sample = NULL;
   }
+
+  voice->channel->synth->active_voice_count -= 1;
 
   return FLUID_OK;
 }
