@@ -42,6 +42,23 @@
 void fluid_sys_config(void);
 void fluid_log_config(void);
 
+/* Misc */
+
+#define fluid_return_val_if_fail(expr, val) do { \
+    if (!(expr)) { \
+        fprintf(stderr, "CRITICAL: %s:%d: assertion '%s' failed\n", \
+                __FILE__, __LINE__, #expr); \
+        return (val); \
+    } \
+} while (0)
+#define fluid_return_if_fail(expr) do { \
+    if (!(expr)) { \
+        fprintf(stderr, "CRITICAL: %s:%d: assertion '%s' failed\n", \
+                __FILE__, __LINE__, #expr); \
+        return; \
+    } \
+} while (0)
+#define FLUID_INLINE              inline
 
 /*
  * Utility functions
